@@ -81,7 +81,7 @@ fn main() {
         }
 
         // Update systems
-        movement_system(&mut ecs_world, movement);
+        player_movement_system(&mut ecs_world, movement);
 
         // Update camera to follow player
         if let Some(pos) = ecs_world.get_component::<Position>(player) {
@@ -89,6 +89,7 @@ fn main() {
         }
 
         let mut d = rl.begin_drawing(&thread);
+
         d.clear_background(Color::BLACK);
 
         render_system(&ecs_world, &mut d, &camera);

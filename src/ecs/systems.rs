@@ -3,8 +3,11 @@ use super::EntityId;
 use super::World;
 use raylib::prelude::*;
 
-pub fn movement_system(world: &mut World, movement_input: Vector2) {
-    // Collect the data we need first
+pub fn player_movement_system(world: &mut World, movement_input: Vector2) {
+    if movement_input == Vector2::zero() {
+        return;
+    }
+
     let updates: Vec<(EntityId, Vector2)> = world
         .entities
         .iter()
@@ -16,7 +19,6 @@ pub fn movement_system(world: &mut World, movement_input: Vector2) {
         })
         .collect();
 
-    // Apply the updates after collecting
     for (entity, new_pos) in updates {
         world.add_component(entity, Position(new_pos));
     }
