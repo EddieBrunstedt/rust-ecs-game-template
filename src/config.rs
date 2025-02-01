@@ -1,6 +1,5 @@
 use std::sync::LazyLock;
 
-#[derive(Clone)]
 pub struct GameConfig {
     // Window settings
     pub window_width: i32,
