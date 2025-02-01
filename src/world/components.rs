@@ -4,7 +4,7 @@ use super::PlayerId;
 
 pub struct Position(pub Vector2);
 
-pub struct Renderable {
+pub struct Visual {
     pub color: Color,
     pub size: f32,
 }
@@ -15,7 +15,7 @@ pub struct Player {
     pub speed: f32,
 }
 
-pub struct Input {
+pub struct Control {
     pub movement: Vector2,
 
     // Needed later when multiplayer is implemented

@@ -1,6 +1,6 @@
 pub mod components;
 pub mod systems;
-use components::{Input, Player, Position, Renderable};
+use components::{Control, Player, Position, Visual};
 use std::collections::HashMap;
 
 pub type EntityId = u64;
@@ -8,45 +8,45 @@ pub type PlayerId = u64;
 
 pub struct World {
     // Entities
-    entities: Vec<EntityId>,
+    entity_ids: Vec<EntityId>,
     next_entity_id: EntityId,
     next_player_id: PlayerId,
 
     // Components
-    inputs: ComponentStorage<Input>,
-    players: ComponentStorage<Player>,
-    positions: ComponentStorage<Position>,
-    renderables: ComponentStorage<Renderable>,
+    controls: ComponentMap<Control>,
+    players: ComponentMap<Player>,
+    positions: ComponentMap<Position>,
+    visuals: ComponentMap<Visual>,
 }
 
-pub struct ComponentStorage<T> {
-    data: HashMap<EntityId, T>,
+pub struct ComponentMap<T> {
+    entries: HashMap<EntityId, T>,
 }
 
-impl<T> ComponentStorage<T> {
+impl<T> ComponentMap<T> {
     pub fn new() -> Self {
         Self {
-            data: HashMap::new(),
+            entries: HashMap::new(),
         }
     }
 
     pub fn insert(&mut self, entity: EntityId, component: T) {
-        self.data.insert(entity, component);
+        self.entries.insert(entity, component);
     }
 
     pub fn get(&self, entity: EntityId) -> Option<&T> {
-        self.data.get(&entity)
+        self.entries.get(&entity)
     }
 }
 
 impl World {
     pub fn new() -> Self {
         Self {
-            entities: Vec::new(),
-            players: ComponentStorage::new(),
-            renderables: ComponentStorage::new(),
-            positions: ComponentStorage::new(),
-            inputs: ComponentStorage::new(),
+            entity_ids: Vec::new(),
+            players: ComponentMap::new(),
+            visuals: ComponentMap::new(),
+            positions: ComponentMap::new(),
+            controls: ComponentMap::new(),
             next_entity_id: 0,
             next_player_id: 0,
         }
@@ -54,7 +54,7 @@ impl World {
 
     pub fn create_entity(&mut self) -> EntityId {
         let entity_id = self.next_entity_id;
-        self.entities.push(entity_id);
+        self.entity_ids.push(entity_id);
         self.next_entity_id += 1;
         entity_id
     }
@@ -63,12 +63,12 @@ impl World {
         self.positions.insert(entity, component);
     }
 
-    pub fn add_input(&mut self, entity: EntityId, component: Input) {
-        self.inputs.insert(entity, component);
+    pub fn add_controls(&mut self, entity: EntityId, component: Control) {
+        self.controls.insert(entity, component);
     }
 
-    pub fn add_renderable(&mut self, entity: EntityId, component: Renderable) {
-        self.renderables.insert(entity, component);
+    pub fn add_visual(&mut self, entity: EntityId, component: Visual) {
+        self.visuals.insert(entity, component);
     }
 
     pub fn add_player(&mut self, entity: EntityId, mut component: Player) {
@@ -81,15 +81,15 @@ impl World {
         self.positions.get(entity)
     }
 
-    pub fn get_renderable(&self, entity: EntityId) -> Option<&Renderable> {
-        self.renderables.get(entity)
+    pub fn get_visual(&self, entity: EntityId) -> Option<&Visual> {
+        self.visuals.get(entity)
     }
 
     pub fn get_player(&self, entity: EntityId) -> Option<&Player> {
         self.players.get(entity)
     }
 
-    pub fn get_input(&self, entity: EntityId) -> Option<&Input> {
-        self.inputs.get(entity)
+    pub fn get_control(&self, entity: EntityId) -> Option<&Control> {
+        self.controls.get(entity)
     }
 }

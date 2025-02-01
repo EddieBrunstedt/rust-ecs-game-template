@@ -21,17 +21,17 @@ fn main() {
         },
     );
 
-    world.add_input(
+    world.add_controls(
         player_entity,
-        Input {
+        Control {
             movement: Vector2::zero(),
             player_id: 0,
         },
     );
 
-    world.add_renderable(
+    world.add_visual(
         player_entity,
-        Renderable {
+        Visual {
             color: Color::RED,
             size: config.player_size,
         },
@@ -47,9 +47,9 @@ fn main() {
                 rand::random::<f32>() * 1000.0 - 500.0,
             )),
         );
-        world.add_renderable(
+        world.add_visual(
             dot,
-            Renderable {
+            Visual {
                 color: Color::GRAY,
                 size: config.background_dot_size,
             },
@@ -72,8 +72,8 @@ fn main() {
     };
 
     while !rl_handle.window_should_close() {
-        input_system(&mut world, &rl_handle);
-        player_movement_system(&mut world);
+        handle_input(&mut world, &rl_handle);
+        update_player_positions(&mut world);
 
         // Center camera to player
         if let Some(pos) = world.get_position(player_entity) {
@@ -84,6 +84,6 @@ fn main() {
 
         draw_handle.clear_background(Color::BLACK);
 
-        render_system(&world, &mut draw_handle, &camera);
+        render_visuals(&world, &mut draw_handle, &camera);
     }
 }

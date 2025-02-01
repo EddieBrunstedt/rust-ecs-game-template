@@ -3,15 +3,15 @@ use super::EntityId;
 use super::World;
 use raylib::prelude::*;
 
-pub fn player_movement_system(world: &mut World) {
+pub fn update_player_positions(world: &mut World) {
     let updates: Vec<(EntityId, Vector2)> = world
-        .entities
+        .entity_ids
         .iter()
         .filter_map(|entity| {
             let player = world.get_player(*entity)?;
-            let input = world.get_input(*entity)?;
+            let control = world.get_control(*entity)?;
             let position = world.get_position(*entity)?;
-            let new_pos = position.0 + (input.movement * player.speed);
+            let new_pos = position.0 + (control.movement * player.speed);
             Some((*entity, new_pos))
         })
         .collect();
@@ -21,45 +21,45 @@ pub fn player_movement_system(world: &mut World) {
     }
 }
 
-pub fn render_system(world: &World, d: &mut RaylibDrawHandle, camera: &Camera2D) {
-    let mut camera_draw = d.begin_mode2D(*camera);
+pub fn render_visuals(world: &World, draw_handle: &mut RaylibDrawHandle, camera: &Camera2D) {
+    let mut camera_draw = draw_handle.begin_mode2D(*camera);
 
-    for entity in &world.entities {
-        if let (Some(position), Some(renderable)) =
-            (world.get_position(*entity), world.get_renderable(*entity))
+    for entity in &world.entity_ids {
+        if let (Some(position), Some(visual)) =
+            (world.get_position(*entity), world.get_visual(*entity))
         {
             camera_draw.draw_circle(
                 position.0.x as i32,
                 position.0.y as i32,
-                renderable.size,
-                renderable.color,
+                visual.size,
+                visual.color,
             );
         }
     }
 }
 
-pub fn input_system(world: &mut World, rl: &RaylibHandle) {
-    let input_updates: Vec<(EntityId, Vector2)> = world
-        .entities
+pub fn handle_input(world: &mut World, raylib_handle: &RaylibHandle) {
+    let control_updates: Vec<(EntityId, Vector2)> = world
+        .entity_ids
         .iter()
         .filter_map(|entity| {
             let player = world.get_player(*entity)?;
 
-            // Ensures the entity has an Input component attached
-            world.get_input(*entity)?;
+            // Ensures the entity has an Control component attached
+            world.get_control(*entity)?;
 
             if player.is_local {
                 let mut movement = Vector2::zero();
-                if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
+                if raylib_handle.is_key_down(KeyboardKey::KEY_RIGHT) {
                     movement.x += 1.0;
                 }
-                if rl.is_key_down(KeyboardKey::KEY_LEFT) {
+                if raylib_handle.is_key_down(KeyboardKey::KEY_LEFT) {
                     movement.x -= 1.0;
                 }
-                if rl.is_key_down(KeyboardKey::KEY_DOWN) {
+                if raylib_handle.is_key_down(KeyboardKey::KEY_DOWN) {
                     movement.y += 1.0;
                 }
-                if rl.is_key_down(KeyboardKey::KEY_UP) {
+                if raylib_handle.is_key_down(KeyboardKey::KEY_UP) {
                     movement.y -= 1.0;
                 }
 
@@ -70,10 +70,10 @@ pub fn input_system(world: &mut World, rl: &RaylibHandle) {
         })
         .collect();
 
-    for (entity, movement) in input_updates {
-        world.add_input(
+    for (entity, movement) in control_updates {
+        world.add_controls(
             entity,
-            Input {
+            Control {
                 movement: movement.normalized(),
                 player_id: world
                     .get_player(entity)
