@@ -15,7 +15,17 @@ fn main() {
     world.add_player(
         player_entity,
         Player {
+            id: 0,
+            is_local: true,
             speed: config.player_speed,
+        },
+    );
+
+    world.add_input(
+        player_entity,
+        Input {
+            movement: Vector2::zero(),
+            player_id: 0,
         },
     );
 
@@ -46,7 +56,7 @@ fn main() {
         );
     }
 
-    let (mut rl, thread) = raylib::init()
+    let (mut rl_handle, thread) = raylib::init()
         .size(config.window_width, config.window_height)
         .title(config.window_title)
         .build();
@@ -61,34 +71,19 @@ fn main() {
         zoom: config.camera_zoom,
     };
 
-    while !rl.window_should_close() {
-        let mut movement = Vector2::zero();
+    while !rl_handle.window_should_close() {
+        input_system(&mut world, &rl_handle);
+        player_movement_system(&mut world);
 
-        if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
-            movement.x += 1.0;
-        }
-        if rl.is_key_down(KeyboardKey::KEY_LEFT) {
-            movement.x -= 1.0;
-        }
-        if rl.is_key_down(KeyboardKey::KEY_DOWN) {
-            movement.y += 1.0;
-        }
-        if rl.is_key_down(KeyboardKey::KEY_UP) {
-            movement.y -= 1.0;
-        }
-
-        // Update systems
-        player_movement_system(&mut world, movement);
-
-        // Update camera to follow player
+        // Center camera to player
         if let Some(pos) = world.get_position(player_entity) {
             camera.target = pos.0;
         }
 
-        let mut d = rl.begin_drawing(&thread);
+        let mut draw_handle = rl_handle.begin_drawing(&thread);
 
-        d.clear_background(Color::BLACK);
+        draw_handle.clear_background(Color::BLACK);
 
-        render_system(&world, &mut d, &camera);
+        render_system(&world, &mut draw_handle, &camera);
     }
 }

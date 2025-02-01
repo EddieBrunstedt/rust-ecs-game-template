@@ -1,16 +1,22 @@
 pub mod components;
 pub mod systems;
-use components::{Player, Position, Renderable};
+use components::{Input, Player, Position, Renderable};
 use std::collections::HashMap;
 
 pub type EntityId = u64;
+pub type PlayerId = u64;
 
 pub struct World {
+    // Entities
     entities: Vec<EntityId>,
-    players: ComponentStorage<Player>,
-    renderables: ComponentStorage<Renderable>,
-    positions: ComponentStorage<Position>,
     next_entity_id: EntityId,
+    next_player_id: PlayerId,
+
+    // Components
+    inputs: ComponentStorage<Input>,
+    players: ComponentStorage<Player>,
+    positions: ComponentStorage<Position>,
+    renderables: ComponentStorage<Renderable>,
 }
 
 pub struct ComponentStorage<T> {
@@ -40,7 +46,9 @@ impl World {
             players: ComponentStorage::new(),
             renderables: ComponentStorage::new(),
             positions: ComponentStorage::new(),
+            inputs: ComponentStorage::new(),
             next_entity_id: 0,
+            next_player_id: 0,
         }
     }
 
@@ -51,17 +59,22 @@ impl World {
         entity_id
     }
 
-    // Specific methods for each component type
     pub fn add_position(&mut self, entity: EntityId, component: Position) {
         self.positions.insert(entity, component);
+    }
+
+    pub fn add_input(&mut self, entity: EntityId, component: Input) {
+        self.inputs.insert(entity, component);
     }
 
     pub fn add_renderable(&mut self, entity: EntityId, component: Renderable) {
         self.renderables.insert(entity, component);
     }
 
-    pub fn add_player(&mut self, entity: EntityId, component: Player) {
+    pub fn add_player(&mut self, entity: EntityId, mut component: Player) {
+        component.id = self.next_player_id;
         self.players.insert(entity, component);
+        self.next_player_id += 1;
     }
 
     pub fn get_position(&self, entity: EntityId) -> Option<&Position> {
@@ -74,5 +87,9 @@ impl World {
 
     pub fn get_player(&self, entity: EntityId) -> Option<&Player> {
         self.players.get(entity)
+    }
+
+    pub fn get_input(&self, entity: EntityId) -> Option<&Input> {
+        self.inputs.get(entity)
     }
 }
