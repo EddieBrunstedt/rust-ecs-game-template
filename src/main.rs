@@ -15,19 +15,22 @@ fn main() {
         .build();
 
     while !rl.window_should_close() {
-        // Update player position based on input
+        let mut movement = Vector2::zero();
+
         if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
-            world.player.position.x += world.player.speed;
+            movement.x += 1.0;
         }
         if rl.is_key_down(KeyboardKey::KEY_LEFT) {
-            world.player.position.x -= world.player.speed;
+            movement.x -= 1.0;
         }
         if rl.is_key_down(KeyboardKey::KEY_DOWN) {
-            world.player.position.y += world.player.speed;
+            movement.y += 1.0;
         }
         if rl.is_key_down(KeyboardKey::KEY_UP) {
-            world.player.position.y -= world.player.speed;
+            movement.y -= 1.0;
         }
+
+        world.player.position += movement * world.player.speed;
 
         // Update camera to follow player
         world.camera.target = world.player.position;
