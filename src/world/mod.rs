@@ -1,6 +1,6 @@
 pub mod components;
 pub mod systems;
-use components::{Control, Player, Position, Visual};
+use components::{CameraComponent, ControlComponent, PlayerComponent, Position, VisualComponent};
 use std::collections::HashMap;
 
 pub type EntityId = u64;
@@ -13,10 +13,11 @@ pub struct World {
     next_player_id: PlayerId,
 
     // Components
-    controls: ComponentMap<Control>,
-    players: ComponentMap<Player>,
+    cameras: ComponentMap<CameraComponent>,
+    controls: ComponentMap<ControlComponent>,
+    players: ComponentMap<PlayerComponent>,
     positions: ComponentMap<Position>,
-    visuals: ComponentMap<Visual>,
+    visuals: ComponentMap<VisualComponent>,
 }
 
 pub struct ComponentMap<T> {
@@ -43,12 +44,13 @@ impl World {
     pub fn new() -> Self {
         Self {
             entity_ids: Vec::new(),
-            players: ComponentMap::new(),
-            visuals: ComponentMap::new(),
-            positions: ComponentMap::new(),
-            controls: ComponentMap::new(),
             next_entity_id: 0,
             next_player_id: 0,
+            cameras: ComponentMap::new(),
+            controls: ComponentMap::new(),
+            players: ComponentMap::new(),
+            positions: ComponentMap::new(),
+            visuals: ComponentMap::new(),
         }
     }
 
@@ -63,15 +65,19 @@ impl World {
         self.positions.insert(entity, component);
     }
 
-    pub fn add_controls(&mut self, entity: EntityId, component: Control) {
+    pub fn add_camera(&mut self, entity: EntityId, component: CameraComponent) {
+        self.cameras.insert(entity, component);
+    }
+
+    pub fn add_controls(&mut self, entity: EntityId, component: ControlComponent) {
         self.controls.insert(entity, component);
     }
 
-    pub fn add_visual(&mut self, entity: EntityId, component: Visual) {
+    pub fn add_visual(&mut self, entity: EntityId, component: VisualComponent) {
         self.visuals.insert(entity, component);
     }
 
-    pub fn add_player(&mut self, entity: EntityId, mut component: Player) {
+    pub fn add_player(&mut self, entity: EntityId, mut component: PlayerComponent) {
         component.id = self.next_player_id;
         self.players.insert(entity, component);
         self.next_player_id += 1;
@@ -81,15 +87,37 @@ impl World {
         self.positions.get(entity)
     }
 
-    pub fn get_visual(&self, entity: EntityId) -> Option<&Visual> {
+    pub fn get_visual(&self, entity: EntityId) -> Option<&VisualComponent> {
         self.visuals.get(entity)
     }
 
-    pub fn get_player(&self, entity: EntityId) -> Option<&Player> {
+    pub fn get_player(&self, entity: EntityId) -> Option<&PlayerComponent> {
         self.players.get(entity)
     }
 
-    pub fn get_control(&self, entity: EntityId) -> Option<&Control> {
+    pub fn get_camera(&self, entity: EntityId) -> Option<&CameraComponent> {
+        self.cameras.get(entity)
+    }
+
+    pub fn get_control(&self, entity: EntityId) -> Option<&ControlComponent> {
         self.controls.get(entity)
+    }
+
+    pub fn expect_control(&self, entity: EntityId) -> &ControlComponent {
+        self.expect_component(entity, World::get_control, "ControlComponent")
+    }
+
+    pub fn expect_position(&self, entity: EntityId) -> &Position {
+        self.expect_component(entity, World::get_position, "Position")
+    }
+
+    fn expect_component<T>(
+        &self,
+        entity: EntityId,
+        getter: impl Fn(&World, EntityId) -> Option<&T>,
+        name: &str,
+    ) -> &T {
+        getter(self, entity)
+            .unwrap_or_else(|| panic!("Entity {} is missing required component: {}", entity, name))
     }
 }

@@ -6,15 +6,17 @@ use world::{components::*, systems::*, World};
 
 fn main() {
     let config = &DEFAULT_CONFIG;
+
     let mut world = World::new();
 
     let player_entity = world.create_entity();
+    let camera_entity = world.create_entity();
 
     world.add_position(player_entity, Position(Vector2::new(0.0, 0.0)));
 
     world.add_player(
         player_entity,
-        Player {
+        PlayerComponent {
             id: 0,
             is_local: true,
             speed: config.player_speed,
@@ -23,17 +25,31 @@ fn main() {
 
     world.add_controls(
         player_entity,
-        Control {
+        ControlComponent {
             movement: Vector2::zero(),
-            player_id: 0,
         },
     );
 
     world.add_visual(
         player_entity,
-        Visual {
+        VisualComponent {
             color: Color::RED,
             size: config.player_size,
+        },
+    );
+
+    world.add_position(camera_entity, Position(Vector2::zero()));
+
+    world.add_camera(
+        camera_entity,
+        CameraComponent {
+            offset: Vector2::new(
+                config.window_width as f32 / 2.,
+                config.window_height as f32 / 2.,
+            ),
+            rotation: 0.0,
+            zoom: config.camera_zoom,
+            following_entity: Some(player_entity),
         },
     );
 
@@ -49,41 +65,22 @@ fn main() {
         );
         world.add_visual(
             dot,
-            Visual {
+            VisualComponent {
                 color: Color::GRAY,
                 size: config.background_dot_size,
             },
         );
     }
 
-    let (mut rl_handle, thread) = raylib::init()
+    let (mut raylib_handle, thread) = raylib::init()
         .size(config.window_width, config.window_height)
         .title(config.window_title)
         .build();
 
-    let mut camera = Camera2D {
-        target: Vector2::zero(),
-        offset: Vector2::new(
-            config.window_width as f32 / 2.,
-            config.window_height as f32 / 2.,
-        ),
-        rotation: 0.0,
-        zoom: config.camera_zoom,
-    };
-
-    while !rl_handle.window_should_close() {
-        handle_input(&mut world, &rl_handle);
-        update_player_positions(&mut world);
-
-        // Center camera to player
-        if let Some(pos) = world.get_position(player_entity) {
-            camera.target = pos.0;
-        }
-
-        let mut draw_handle = rl_handle.begin_drawing(&thread);
-
-        draw_handle.clear_background(Color::BLACK);
-
-        render_visuals(&world, &mut draw_handle, &camera);
+    while !raylib_handle.window_should_close() {
+        HandleInputSystem::run(&mut world, &raylib_handle);
+        UpdatePlayerPositionsSystem::run(&mut world, &raylib_handle);
+        CameraFollowSystem::run(&mut world, &raylib_handle);
+        RenderVisualsSystem::run(&mut world, &mut raylib_handle.begin_drawing(&thread));
     }
 }

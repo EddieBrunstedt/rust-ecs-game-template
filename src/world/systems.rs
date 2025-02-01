@@ -3,83 +3,135 @@ use super::EntityId;
 use super::World;
 use raylib::prelude::*;
 
-pub fn update_player_positions(world: &mut World) {
-    let updates: Vec<(EntityId, Vector2)> = world
-        .entity_ids
-        .iter()
-        .filter_map(|entity| {
-            let player = world.get_player(*entity)?;
-            let control = world.get_control(*entity)?;
-            let position = world.get_position(*entity)?;
-            let new_pos = position.0 + (control.movement * player.speed);
-            Some((*entity, new_pos))
-        })
-        .collect();
-
-    for (entity, new_pos) in updates {
-        world.add_position(entity, Position(new_pos));
-    }
+pub trait UpdateSystem {
+    fn run(world: &mut World, raylib_handle: &RaylibHandle);
+}
+pub trait RenderSystem {
+    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle);
 }
 
-pub fn render_visuals(world: &World, draw_handle: &mut RaylibDrawHandle, camera: &Camera2D) {
-    let mut camera_draw = draw_handle.begin_mode2D(*camera);
+pub struct UpdatePlayerPositionsSystem;
+pub struct RenderVisualsSystem;
+pub struct HandleInputSystem;
+pub struct CameraFollowSystem;
 
-    for entity in &world.entity_ids {
-        if let (Some(position), Some(visual)) =
-            (world.get_position(*entity), world.get_visual(*entity))
-        {
-            camera_draw.draw_circle(
-                position.0.x as i32,
-                position.0.y as i32,
-                visual.size,
-                visual.color,
+impl UpdateSystem for HandleInputSystem {
+    fn run(world: &mut World, raylib_handle: &RaylibHandle) {
+        let control_updates: Vec<(EntityId, Vector2)> = world
+            .entity_ids
+            .iter()
+            .filter_map(|entity| {
+                let player = world.get_player(*entity)?;
+                world.expect_control(*entity);
+
+                if player.is_local {
+                    let mut movement = Vector2::zero();
+                    if raylib_handle.is_key_down(KeyboardKey::KEY_RIGHT) {
+                        movement.x += 1.0;
+                    }
+                    if raylib_handle.is_key_down(KeyboardKey::KEY_LEFT) {
+                        movement.x -= 1.0;
+                    }
+                    if raylib_handle.is_key_down(KeyboardKey::KEY_DOWN) {
+                        movement.y += 1.0;
+                    }
+                    if raylib_handle.is_key_down(KeyboardKey::KEY_UP) {
+                        movement.y -= 1.0;
+                    }
+
+                    Some((*entity, movement))
+                } else {
+                    todo!("Implement movement for network players");
+                }
+            })
+            .collect();
+
+        for (entity, movement) in control_updates {
+            world.add_controls(
+                entity,
+                ControlComponent {
+                    movement: movement.normalized(),
+                },
             );
         }
     }
 }
 
-pub fn handle_input(world: &mut World, raylib_handle: &RaylibHandle) {
-    let control_updates: Vec<(EntityId, Vector2)> = world
-        .entity_ids
-        .iter()
-        .filter_map(|entity| {
-            let player = world.get_player(*entity)?;
+impl RenderSystem for RenderVisualsSystem {
+    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle) {
+        draw_handle.clear_background(Color::BLACK);
 
-            // Ensures the entity has an Control component attached
-            world.get_control(*entity)?;
+        let camera_data = world
+            .entity_ids
+            .iter()
+            .find_map(|entity| {
+                let camera = world.get_camera(*entity)?;
+                let position = world.expect_position(*entity);
+                Some((camera, position))
+            })
+            .expect("No camera entity found in world");
 
-            if player.is_local {
-                let mut movement = Vector2::zero();
-                if raylib_handle.is_key_down(KeyboardKey::KEY_RIGHT) {
-                    movement.x += 1.0;
-                }
-                if raylib_handle.is_key_down(KeyboardKey::KEY_LEFT) {
-                    movement.x -= 1.0;
-                }
-                if raylib_handle.is_key_down(KeyboardKey::KEY_DOWN) {
-                    movement.y += 1.0;
-                }
-                if raylib_handle.is_key_down(KeyboardKey::KEY_UP) {
-                    movement.y -= 1.0;
-                }
+        let (camera_component, camera_position) = camera_data;
 
-                Some((*entity, movement))
-            } else {
-                todo!("Implement movement for network players");
+        let camera = Camera2D {
+            target: camera_position.0,
+            offset: camera_component.offset,
+            rotation: camera_component.rotation,
+            zoom: camera_component.zoom,
+        };
+
+        let mut camera_draw = draw_handle.begin_mode2D(camera);
+
+        for entity in &world.entity_ids {
+            if let (Some(position), Some(visual)) =
+                (world.get_position(*entity), world.get_visual(*entity))
+            {
+                camera_draw.draw_circle(
+                    position.0.x as i32,
+                    position.0.y as i32,
+                    visual.size,
+                    visual.color,
+                );
             }
-        })
-        .collect();
+        }
+    }
+}
 
-    for (entity, movement) in control_updates {
-        world.add_controls(
-            entity,
-            Control {
-                movement: movement.normalized(),
-                player_id: world
-                    .get_player(entity)
-                    .unwrap_or_else(|| panic!("Could not find entity '{}' in world.", entity))
-                    .id,
-            },
-        );
+impl UpdateSystem for CameraFollowSystem {
+    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
+        let updates: Vec<_> = world
+            .entity_ids
+            .iter()
+            .filter_map(|entity| {
+                let camera = world.get_camera(*entity)?;
+                let target_entity = camera.following_entity?;
+                let target_position = world.expect_position(target_entity);
+                Some((*entity, target_position.0))
+            })
+            .collect();
+
+        for (entity, new_pos) in updates {
+            world.add_position(entity, Position(new_pos));
+        }
+    }
+}
+
+impl UpdateSystem for UpdatePlayerPositionsSystem {
+    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
+        let updates: Vec<(EntityId, Vector2)> = world
+            .entity_ids
+            .iter()
+            .filter_map(|entity| {
+                let player = world.get_player(*entity)?;
+                let control = world.expect_control(*entity);
+                let position = world.expect_position(*entity);
+                let new_position = position.0 + (control.movement * player.speed);
+                Some((*entity, new_position))
+            })
+            .collect();
+
+        for (entity, new_pos) in updates {
+            world.add_position(entity, Position(new_pos));
+        }
     }
 }
