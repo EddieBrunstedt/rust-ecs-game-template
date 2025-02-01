@@ -1,29 +1,26 @@
 mod config;
-mod ecs;
+mod world;
 use config::DEFAULT_CONFIG;
-use ecs::{components::*, systems::*, World as EcsWorld};
 use raylib::prelude::*;
+use world::{components::*, systems::*, World};
 
 fn main() {
     let config = &DEFAULT_CONFIG;
-    let mut ecs_world = EcsWorld::new();
+    let mut world = World::new();
 
-    // Register components
-    ecs_world.register_component::<Position>();
-    ecs_world.register_component::<Renderable>();
-    ecs_world.register_component::<Player>();
+    let player_entity = world.create_entity();
 
-    // Create player entity
-    let player = ecs_world.create_entity();
-    ecs_world.add_component(player, Position(Vector2::new(0.0, 0.0)));
-    ecs_world.add_component(
-        player,
+    world.add_position(player_entity, Position(Vector2::new(0.0, 0.0)));
+
+    world.add_player(
+        player_entity,
         Player {
             speed: config.player_speed,
         },
     );
-    ecs_world.add_component(
-        player,
+
+    world.add_renderable(
+        player_entity,
         Renderable {
             color: Color::RED,
             size: config.player_size,
@@ -32,15 +29,15 @@ fn main() {
 
     // Create background dots
     for _ in 0..config.background_dots_count {
-        let dot = ecs_world.create_entity();
-        ecs_world.add_component(
+        let dot = world.create_entity();
+        world.add_position(
             dot,
             Position(Vector2::new(
                 rand::random::<f32>() * 1000.0 - 500.0,
                 rand::random::<f32>() * 1000.0 - 500.0,
             )),
         );
-        ecs_world.add_component(
+        world.add_renderable(
             dot,
             Renderable {
                 color: Color::GRAY,
@@ -81,10 +78,10 @@ fn main() {
         }
 
         // Update systems
-        player_movement_system(&mut ecs_world, movement);
+        player_movement_system(&mut world, movement);
 
         // Update camera to follow player
-        if let Some(pos) = ecs_world.get_component::<Position>(player) {
+        if let Some(pos) = world.get_position(player_entity) {
             camera.target = pos.0;
         }
 
@@ -92,6 +89,6 @@ fn main() {
 
         d.clear_background(Color::BLACK);
 
-        render_system(&ecs_world, &mut d, &camera);
+        render_system(&world, &mut d, &camera);
     }
 }
