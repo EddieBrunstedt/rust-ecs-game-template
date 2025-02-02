@@ -92,15 +92,22 @@ impl<'a> GameBuilder<'a> {
     }
 
     fn setup_background(&mut self) {
-        for _ in 0..self.config.background_dots_count {
+        let spins = 3.0;
+        let points = 40;
+        let radius_step = 50.0;
+
+        for i in 0..points {
+            let angle = (i as f32 / points as f32) * spins * std::f32::consts::TAU;
+            let radius = radius_step * angle / std::f32::consts::TAU;
+
+            let x = angle.cos() * radius;
+            let y = angle.sin() * radius;
+
             let dot = self.world.create_entity();
-            self.world.add_position(
-                dot,
-                PositionComponent(Vector2::new(
-                    rand::random::<f32>() * 1000.0 - 500.0,
-                    rand::random::<f32>() * 1000.0 - 500.0,
-                )),
-            );
+
+            self.world
+                .add_position(dot, PositionComponent(Vector2::new(x, y)));
+
             self.world.add_visual(
                 dot,
                 VisualComponent {
