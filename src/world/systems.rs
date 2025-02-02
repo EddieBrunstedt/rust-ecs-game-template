@@ -54,60 +54,43 @@ impl UpdateSystem for CameraFollowSystem {
 
 impl UpdateSystem for CollisionDetectionSystem {
     fn run(world: &mut World, _raylib_handle: &RaylibHandle, config: &GameConfig) {
-        let score_entity = world
-            .entity_ids
-            .iter()
-            .find(|&&e| world.has_score(e))
-            .copied();
+        let score_entity = world.entity_ids.iter().find(|&&e| world.has_score(e));
 
-        let player_data: Vec<(u64, Vector2, f32)> = world
+        let player_data: Vec<_> = world
             .entity_ids
             .iter()
-            .filter_map(|&entity| {
-                if world.has_player(entity) {
-                    let position = world.expect_position(entity);
-                    let visual = world.visual(entity)?;
-                    Some((entity, position.coords, visual.size))
-                } else {
-                    None
-                }
+            .filter(|&&e| world.has_player(e))
+            .filter_map(|&e| Some((e, world.expect_position(e).coords, world.visual(e)?.size)))
+            .collect();
+
+        let entities_to_remove: Vec<_> = world
+            .entity_ids
+            .iter()
+            .filter(|&&e| !world.has_player(e))
+            .filter_map(|&e| {
+                let pos = world.position(e)?;
+                let size = world.visual(e)?.size;
+
+                player_data
+                    .iter()
+                    .any(|(_, p_pos, p_size)| (*p_pos - pos.coords).length() < (*p_size + size))
+                    .then_some(e)
             })
             .collect();
 
-        let mut collision_count = 0;
-        let entities_to_remove: Vec<EntityId> = world
-            .entity_ids
-            .iter()
-            .filter_map(|&entity| {
-                if world.has_player(entity) {
-                    return None;
-                }
-
-                let position = world.position(entity)?;
-                let visual = world.visual(entity)?;
-
-                for (_player_entity, player_pos, player_size) in &player_data {
-                    let distance = (*player_pos - position.coords).length();
-                    if distance < (player_size + visual.size) {
-                        collision_count += config.points_per_collision;
-                        return Some(entity);
-                    }
-                }
-                None
-            })
-            .collect();
+        let collision_count = (entities_to_remove.len() as i32) * config.points_per_collision;
 
         if collision_count > 0 {
-            if let Some(score_entity) = score_entity {
-                if let Some(score) = world.score_mut(score_entity) {
+            if let Some(&e) = score_entity {
+                if let Some(score) = world.score_mut(e) {
                     score.value += collision_count;
                 }
             }
         }
 
-        for entity in entities_to_remove {
-            world.remove_entity(entity);
-        }
+        entities_to_remove
+            .iter()
+            .for_each(|&e| world.remove_entity(e));
     }
 }
 
