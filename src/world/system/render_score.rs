@@ -16,8 +16,8 @@ impl RenderSystem for RenderScoreSystem {
                 &format!("Score: {}", score.value),
                 config.score_text_x,
                 config.score_text_y,
-                config.score_font_size,
-                config.score_text_color,
+                config.hud_font_size,
+                config.hud_font_color,
             );
         }
     }

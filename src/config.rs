@@ -30,10 +30,14 @@ pub struct GameConfig {
     pub background_spiral_radius_step: f32,
     pub background_spiral_spins: f32,
 
-    pub score_font_size: i32,
-    pub score_text_color: Color,
+    pub hud_font_size: i32,
+    pub hud_font_color: Color,
+
     pub score_text_x: i32,
     pub score_text_y: i32,
+
+    pub fps_padding_top: i32,
+    pub fps_padding_right: i32,
 
     pub points_per_collision: i32,
 }
@@ -50,7 +54,7 @@ impl Default for GameConfig {
             camera_zoom: 1.0,
 
             player_size: 8.,
-            player_speed: 100.,
+            player_speed: 250.,
 
             key_move_right: KeyboardKey::KEY_RIGHT,
             key_move_left: KeyboardKey::KEY_LEFT,
@@ -64,10 +68,14 @@ impl Default for GameConfig {
             background_spiral_radius_step: 50.0,
             background_spiral_spins: 4.0,
 
-            score_font_size: 20,
-            score_text_color: Color::WHITE,
+            hud_font_size: 20,
+            hud_font_color: Color::WHITE,
+
             score_text_x: 10,
             score_text_y: 10,
+
+            fps_padding_top: 10,
+            fps_padding_right: 10,
 
             points_per_collision: 1,
         }
