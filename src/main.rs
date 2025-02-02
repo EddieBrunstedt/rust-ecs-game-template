@@ -1,5 +1,4 @@
-//! A game engine implementation using Entity Component System (ECS) architecture.
-//! Built with Raylib for rendering and input handling.
+#![doc = include_str!("../README.md")]
 
 mod config;
 mod game;
