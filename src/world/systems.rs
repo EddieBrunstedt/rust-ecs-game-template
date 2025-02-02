@@ -111,7 +111,7 @@ impl UpdateSystem for CameraFollowSystem {
             .collect();
 
         for (entity, new_pos) in updates {
-            world.add_position(entity, Position(new_pos));
+            world.add_position(entity, PositionComponent(new_pos));
         }
     }
 }
@@ -130,8 +130,8 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
             })
             .collect();
 
-        for (entity, new_pos) in updates {
-            world.add_position(entity, Position(new_pos));
+        for (entity, new_position) in updates {
+            world.expect_position_mut(entity).0 = new_position;
         }
     }
 }

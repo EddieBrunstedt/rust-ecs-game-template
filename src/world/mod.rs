@@ -1,6 +1,8 @@
 pub mod components;
 pub mod systems;
-use components::{CameraComponent, ControlComponent, PlayerComponent, Position, VisualComponent};
+use components::{
+    CameraComponent, ControlComponent, PlayerComponent, PositionComponent, VisualComponent,
+};
 use std::collections::HashMap;
 
 pub type EntityId = u64;
@@ -16,7 +18,7 @@ pub struct World {
     cameras: ComponentMap<CameraComponent>,
     controls: ComponentMap<ControlComponent>,
     players: ComponentMap<PlayerComponent>,
-    positions: ComponentMap<Position>,
+    positions: ComponentMap<PositionComponent>,
     visuals: ComponentMap<VisualComponent>,
 }
 
@@ -37,6 +39,10 @@ impl<T> ComponentMap<T> {
 
     pub fn get(&self, entity: EntityId) -> Option<&T> {
         self.entries.get(&entity)
+    }
+
+    pub fn get_mut(&mut self, entity: EntityId) -> Option<&mut T> {
+        self.entries.get_mut(&entity)
     }
 }
 
@@ -61,7 +67,7 @@ impl World {
         entity_id
     }
 
-    pub fn add_position(&mut self, entity: EntityId, component: Position) {
+    pub fn add_position(&mut self, entity: EntityId, component: PositionComponent) {
         self.positions.insert(entity, component);
     }
 
@@ -83,8 +89,16 @@ impl World {
         self.next_player_id += 1;
     }
 
-    pub fn get_position(&self, entity: EntityId) -> Option<&Position> {
+    pub fn get_position(&self, entity: EntityId) -> Option<&PositionComponent> {
         self.positions.get(entity)
+    }
+
+    pub fn get_position_mut(&mut self, entity: EntityId) -> Option<&mut PositionComponent> {
+        self.positions.get_mut(entity)
+    }
+
+    pub fn expect_position_mut(&mut self, entity: EntityId) -> &mut PositionComponent {
+        self.expect_component_mut(entity, World::get_position_mut, "PositionComponent")
     }
 
     pub fn get_visual(&self, entity: EntityId) -> Option<&VisualComponent> {
@@ -107,7 +121,7 @@ impl World {
         self.expect_component(entity, World::get_control, "ControlComponent")
     }
 
-    pub fn expect_position(&self, entity: EntityId) -> &Position {
+    pub fn expect_position(&self, entity: EntityId) -> &PositionComponent {
         self.expect_component(entity, World::get_position, "Position")
     }
 
@@ -117,6 +131,16 @@ impl World {
         getter: impl Fn(&World, EntityId) -> Option<&T>,
         name: &str,
     ) -> &T {
+        getter(self, entity)
+            .unwrap_or_else(|| panic!("Entity {} is missing required component: {}", entity, name))
+    }
+
+    fn expect_component_mut<T>(
+        &mut self,
+        entity: EntityId,
+        getter: impl Fn(&mut World, EntityId) -> Option<&mut T>,
+        name: &str,
+    ) -> &mut T {
         getter(self, entity)
             .unwrap_or_else(|| panic!("Entity {} is missing required component: {}", entity, name))
     }

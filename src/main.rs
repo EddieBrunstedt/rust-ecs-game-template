@@ -12,7 +12,7 @@ fn main() {
     let player_entity = world.create_entity();
     let camera_entity = world.create_entity();
 
-    world.add_position(player_entity, Position(Vector2::new(0.0, 0.0)));
+    world.add_position(player_entity, PositionComponent(Vector2::new(0.0, 0.0)));
 
     world.add_player(
         player_entity,
@@ -38,7 +38,7 @@ fn main() {
         },
     );
 
-    world.add_position(camera_entity, Position(Vector2::zero()));
+    world.add_position(camera_entity, PositionComponent(Vector2::zero()));
 
     world.add_camera(
         camera_entity,
@@ -58,7 +58,7 @@ fn main() {
         let dot = world.create_entity();
         world.add_position(
             dot,
-            Position(Vector2::new(
+            PositionComponent(Vector2::new(
                 rand::random::<f32>() * 1000.0 - 500.0,
                 rand::random::<f32>() * 1000.0 - 500.0,
             )),

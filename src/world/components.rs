@@ -1,7 +1,7 @@
 use super::{EntityId, PlayerId};
 use raylib::prelude::*;
 
-pub struct Position(pub Vector2);
+pub struct PositionComponent(pub Vector2);
 
 pub struct VisualComponent {
     pub color: Color,
