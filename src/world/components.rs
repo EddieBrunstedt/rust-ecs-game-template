@@ -39,3 +39,9 @@ pub struct CameraComponent {
     /// Camera zoom level
     pub zoom: f32,
 }
+
+/// Tracks the game score
+pub struct ScoreComponent {
+    /// Current score value
+    pub value: i32,
+}

@@ -1,7 +1,8 @@
 pub mod components;
 pub mod systems;
 use components::{
-    CameraComponent, ControlComponent, PlayerComponent, PositionComponent, VisualComponent,
+    CameraComponent, ControlComponent, PlayerComponent, PositionComponent, ScoreComponent,
+    VisualComponent,
 };
 use std::collections::HashMap;
 
@@ -122,6 +123,7 @@ define_component_storages! {
     controls: ControlComponent,
     player: PlayerComponent,
     position: PositionComponent,
+    score: ScoreComponent,
     visual: VisualComponent
 }
 

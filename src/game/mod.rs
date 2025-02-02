@@ -92,13 +92,14 @@ impl<'a> GameBuilder<'a> {
     }
 
     fn setup_background(&mut self) {
-        let spins = 3.0;
-        let points = 40;
+        let spins = 4.0;
+        let points = 100;
         let radius_step = 50.0;
+        let min_radius = 50.0;
 
         for i in 0..points {
             let angle = (i as f32 / points as f32) * spins * std::f32::consts::TAU;
-            let radius = radius_step * angle / std::f32::consts::TAU;
+            let radius = min_radius + (radius_step * angle / std::f32::consts::TAU);
 
             let x = angle.cos() * radius;
             let y = angle.sin() * radius;
@@ -118,10 +119,18 @@ impl<'a> GameBuilder<'a> {
         }
     }
 
+    fn setup_score(&mut self) {
+        let score_entity = self.world.create_entity();
+
+        self.world
+            .add_score(score_entity, ScoreComponent { value: 0 });
+    }
+
     pub fn build(mut self) -> Game {
         let player = self.setup_player();
         self.setup_camera(player);
         self.setup_background();
+        self.setup_score();
 
         let (raylib_handle, thread) = raylib::init()
             .size(self.config.window_width, self.config.window_height)
@@ -159,9 +168,11 @@ impl Game {
         UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle);
         CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle);
         CameraFollowSystem::run(&mut self.world, &self.raylib_handle);
-        RenderVisualsSystem::run(
-            &mut self.world,
-            &mut self.raylib_handle.begin_drawing(&self.raylib_thread),
-        );
+
+        let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
+        draw_handle.clear_background(Color::BLACK);
+
+        RenderVisualsSystem::run(&mut self.world, &mut draw_handle);
+        RenderScoreSystem::run(&mut self.world, &mut draw_handle);
     }
 }

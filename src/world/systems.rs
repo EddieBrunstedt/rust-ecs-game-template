@@ -23,6 +23,9 @@ pub struct CollisionDetectionSystem;
 /// Processes input and updates entity control states.
 pub struct HandleInputSystem;
 
+/// Renders the score on screen
+pub struct RenderScoreSystem;
+
 /// Renders all visible entities to the screen.
 pub struct RenderVisualsSystem;
 
@@ -50,6 +53,13 @@ impl UpdateSystem for CameraFollowSystem {
 
 impl UpdateSystem for CollisionDetectionSystem {
     fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
+        // First, find the score entity
+        let score_entity = world
+            .entity_ids
+            .iter()
+            .find(|&&e| world.has_score(e))
+            .copied();
+
         let player_data: Vec<(u64, Vector2, f32)> = world
             .entity_ids
             .iter()
@@ -64,6 +74,7 @@ impl UpdateSystem for CollisionDetectionSystem {
             })
             .collect();
 
+        let mut collision_count = 0;
         let entities_to_remove: Vec<EntityId> = world
             .entity_ids
             .iter()
@@ -72,18 +83,28 @@ impl UpdateSystem for CollisionDetectionSystem {
                     return None;
                 }
 
-                let position = world.expect_position(entity);
+                let position = world.position(entity)?;
                 let visual = world.visual(entity)?;
 
                 for (_player_entity, player_pos, player_size) in &player_data {
                     let distance = (*player_pos - position.0).length();
                     if distance < (player_size + visual.size) {
+                        collision_count += 1;
                         return Some(entity);
                     }
                 }
                 None
             })
             .collect();
+
+        // Update score if there were any collisions
+        if collision_count > 0 {
+            if let Some(score_entity) = score_entity {
+                if let Some(score) = world.score_mut(score_entity) {
+                    score.value += collision_count;
+                }
+            }
+        }
 
         for entity in entities_to_remove {
             world.remove_entity(entity);
@@ -128,10 +149,16 @@ impl UpdateSystem for HandleInputSystem {
     }
 }
 
+impl RenderSystem for RenderScoreSystem {
+    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle) {
+        if let Some(score) = world.entity_ids.iter().find_map(|e| world.score(*e)) {
+            draw_handle.draw_text(&format!("Score: {}", score.value), 10, 10, 20, Color::WHITE);
+        }
+    }
+}
+
 impl RenderSystem for RenderVisualsSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle) {
-        draw_handle.clear_background(Color::BLACK);
-
         let camera_data = world
             .entity_ids
             .iter()
