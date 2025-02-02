@@ -1,9 +1,12 @@
 pub mod components;
+pub mod resources;
 pub mod systems;
+
 use components::{
     CameraComponent, ControlComponent, PlayerComponent, PositionComponent, ScoreComponent,
     VisualComponent,
 };
+use resources::Resources;
 use std::collections::HashMap;
 
 /// Unique identifier for entities within the ECS
@@ -45,6 +48,7 @@ macro_rules! define_component_storages {
             entity_ids: Vec<EntityId>,
             /// Counter for generating unique entity IDs
             next_entity_id: EntityId,
+            pub resources: Resources,  // Add resources field
             $(
                 $name: ComponentMap<$type>,
             )*
@@ -57,6 +61,7 @@ macro_rules! define_component_storages {
                 Self {
                     entity_ids: Vec::new(),
                     next_entity_id: 0,
+                    resources: Resources::new(),
                     $(
                         $name: ComponentMap::new(),
                     )*

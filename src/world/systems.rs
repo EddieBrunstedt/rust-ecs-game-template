@@ -33,6 +33,8 @@ pub struct RenderVisualsSystem;
 /// Updates entity positions based on their control states.
 pub struct UpdatePlayerPositionsSystem;
 
+pub struct UpdateTimeSystem;
+
 impl UpdateSystem for CameraFollowSystem {
     fn run(world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
         let updates: Vec<_> = world
@@ -136,6 +138,16 @@ impl RenderSystem for RenderScoreSystem {
                 config.score_text_color,
             );
         }
+
+        if let Some(game_time) = world.resources.game_time() {
+            draw_handle.draw_text(
+                &format!("Time: {:.1}", game_time.total),
+                config.score_text_x,
+                config.score_text_y + config.score_font_size + 5,
+                config.score_font_size,
+                config.score_text_color,
+            );
+        }
     }
 }
 
@@ -185,6 +197,15 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
 
         for (entity, new_position) in updates {
             world.expect_position_mut(entity).coords = new_position;
+        }
+    }
+}
+
+impl UpdateSystem for UpdateTimeSystem {
+    fn run(world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
+        if let Some(game_time) = world.resources.game_time_mut() {
+            game_time.delta = raylib_handle.get_frame_time();
+            game_time.total += game_time.delta;
         }
     }
 }

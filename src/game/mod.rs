@@ -2,7 +2,7 @@
 
 use crate::{
     config::GameConfig,
-    world::{components::*, systems::*, EntityId, World},
+    world::{components::*, resources::GameTime, systems::*, EntityId, World},
 };
 use raylib::prelude::*;
 
@@ -38,6 +38,13 @@ impl GameBuilder {
             world: World::new(),
             config: GameConfig::default(),
         }
+    }
+
+    fn setup_resources(&mut self) {
+        self.world.resources.insert_game_time(GameTime {
+            total: 0.0,
+            delta: 0.0,
+        });
     }
 
     fn setup_player(&mut self) -> EntityId {
@@ -141,6 +148,7 @@ impl GameBuilder {
     pub fn build(mut self) -> Game {
         let player = self.setup_player();
         self.setup_camera(player);
+        self.setup_resources();
         self.setup_background();
         self.setup_score();
 
@@ -177,6 +185,7 @@ impl Game {
     }
 
     fn handle_playing_state(&mut self) {
+        UpdateTimeSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         HandleInputSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle, &self.config);
