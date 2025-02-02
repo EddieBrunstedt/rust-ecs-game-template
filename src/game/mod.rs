@@ -2,15 +2,7 @@
 
 use crate::{
     config::GameConfig,
-    world::{
-        component::{
-            CameraComponent, ControlComponent, PlayerComponent, PositionComponent, ScoreComponent,
-            VisualComponent,
-        },
-        resource::GameTime,
-        system::*,
-        EntityId, World,
-    },
+    world::{component::*, resource::*, system::*, EntityId, World},
 };
 use raylib::prelude::*;
 
@@ -194,15 +186,16 @@ impl Game {
     }
 
     fn handle_playing_state(&mut self) {
+        // Update Systems
         UpdateTimeSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         HandleInputSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         CameraFollowSystem::run(&mut self.world, &self.raylib_handle, &self.config);
 
+        // Render Systems
         let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
-        draw_handle.clear_background(Color::BLACK);
-
+        ClearScreenSystem::run(&mut self.world, &mut draw_handle, &self.config);
         RenderVisualsSystem::run(&mut self.world, &mut draw_handle, &self.config);
         RenderScoreSystem::run(&mut self.world, &mut draw_handle, &self.config);
         RenderGameTimeSystem::run(&mut self.world, &mut draw_handle, &self.config)
