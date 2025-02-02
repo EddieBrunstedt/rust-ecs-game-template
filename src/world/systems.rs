@@ -170,38 +170,26 @@ impl RenderSystem for RenderScoreSystem {
 
 impl RenderSystem for RenderVisualsSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle, _config: &GameConfig) {
-        let camera_data = world
+        let (camera, pos) = world
             .entity_ids
             .iter()
-            .find_map(|entity| {
-                let camera = world.camera(*entity)?;
-                let position = world.expect_position(*entity);
-                Some((camera, position))
-            })
+            .find_map(|&id| Some((world.camera(id)?, world.expect_position(id))))
             .expect("No camera entity found in world");
 
-        let (camera_component, camera_position) = camera_data;
+        let mut draw = draw_handle.begin_mode2D(Camera2D {
+            target: pos.0,
+            offset: camera.offset,
+            rotation: camera.rotation,
+            zoom: camera.zoom,
+        });
 
-        let camera = Camera2D {
-            target: camera_position.0,
-            offset: camera_component.offset,
-            rotation: camera_component.rotation,
-            zoom: camera_component.zoom,
-        };
-
-        let mut camera_draw = draw_handle.begin_mode2D(camera);
-
-        for entity in &world.entity_ids {
-            if let (Some(position), Some(visual)) = (world.position(*entity), world.visual(*entity))
-            {
-                camera_draw.draw_circle(
-                    position.0.x as i32,
-                    position.0.y as i32,
-                    visual.size,
-                    visual.color,
-                );
-            }
-        }
+        world
+            .entity_ids
+            .iter()
+            .filter_map(|&id| Some((world.position(id)?, world.visual(id)?)))
+            .for_each(|(pos, visual)| {
+                draw.draw_circle(pos.0.x as i32, pos.0.y as i32, visual.size, visual.color)
+            });
     }
 }
 
