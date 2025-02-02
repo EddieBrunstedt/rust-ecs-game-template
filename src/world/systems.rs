@@ -21,7 +21,7 @@ impl UpdateSystem for CameraFollowSystem {
             .entity_ids
             .iter()
             .filter_map(|entity| {
-                let camera = world.get_camera(*entity)?;
+                let camera = world.camera(*entity)?;
                 let target_entity = camera.following_entity?;
                 let target_position = world.expect_position(target_entity);
                 Some((*entity, target_position.0))
@@ -40,9 +40,9 @@ impl UpdateSystem for CollisionDetectionSystem {
             .entity_ids
             .iter()
             .filter_map(|&entity| {
-                if world.is_player(entity) {
+                if world.has_player(entity) {
                     let position = world.expect_position(entity);
-                    let visual = world.get_visual(entity)?;
+                    let visual = world.visual(entity)?;
                     Some((entity, position.0, visual.size))
                 } else {
                     None
@@ -54,14 +54,13 @@ impl UpdateSystem for CollisionDetectionSystem {
             .entity_ids
             .iter()
             .filter_map(|&entity| {
-                if world.is_player(entity) {
+                if world.has_player(entity) {
                     return None;
                 }
 
                 let position = world.expect_position(entity);
-                let visual = world.get_visual(entity)?;
+                let visual = world.visual(entity)?;
 
-                // Check collision with any player
                 for (_player_entity, player_pos, player_size) in &player_data {
                     let distance = (*player_pos - position.0).length();
                     if distance < (player_size + visual.size) {
@@ -84,8 +83,8 @@ impl UpdateSystem for HandleInputSystem {
             .entity_ids
             .iter()
             .filter_map(|entity| {
-                let player = world.get_player(*entity)?;
-                world.expect_control(*entity);
+                let player = world.player(*entity)?;
+                world.controls(*entity);
 
                 if player.is_local {
                     let mut movement = Vector2::zero();
@@ -110,7 +109,7 @@ impl UpdateSystem for HandleInputSystem {
             .collect();
 
         for (entity, movement) in control_updates {
-            world.expect_control_mut(entity).movement = movement.normalized();
+            world.expect_controls_mut(entity).movement = movement.normalized();
         }
     }
 }
@@ -123,7 +122,7 @@ impl RenderSystem for RenderVisualsSystem {
             .entity_ids
             .iter()
             .find_map(|entity| {
-                let camera = world.get_camera(*entity)?;
+                let camera = world.camera(*entity)?;
                 let position = world.expect_position(*entity);
                 Some((camera, position))
             })
@@ -141,8 +140,7 @@ impl RenderSystem for RenderVisualsSystem {
         let mut camera_draw = draw_handle.begin_mode2D(camera);
 
         for entity in &world.entity_ids {
-            if let (Some(position), Some(visual)) =
-                (world.get_position(*entity), world.get_visual(*entity))
+            if let (Some(position), Some(visual)) = (world.position(*entity), world.visual(*entity))
             {
                 camera_draw.draw_circle(
                     position.0.x as i32,
@@ -161,8 +159,8 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
             .entity_ids
             .iter()
             .filter_map(|entity| {
-                let player = world.get_player(*entity)?;
-                let control = world.expect_control(*entity);
+                let player = world.player(*entity)?;
+                let control = world.expect_controls(*entity);
                 let position = world.expect_position(*entity);
                 let new_position = position.0 + (control.movement * player.speed);
                 Some((*entity, new_position))

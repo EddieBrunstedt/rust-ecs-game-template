@@ -38,20 +38,22 @@ impl<'a> GameBuilder<'a> {
 
         self.world
             .add_position(player, PositionComponent(Vector2::new(0.0, 0.0)));
+
         self.world.add_player(
             player,
             PlayerComponent {
-                id: 0,
                 is_local: true,
                 speed: self.config.player_speed,
             },
         );
+
         self.world.add_controls(
             player,
             ControlComponent {
                 movement: Vector2::zero(),
             },
         );
+
         self.world.add_visual(
             player,
             VisualComponent {

@@ -1,4 +1,4 @@
-use super::{EntityId, PlayerId};
+use super::EntityId;
 use raylib::prelude::*;
 
 pub struct PositionComponent(pub Vector2);
@@ -9,7 +9,6 @@ pub struct VisualComponent {
 }
 
 pub struct PlayerComponent {
-    pub id: PlayerId,
     pub is_local: bool,
     pub speed: f32,
 }
