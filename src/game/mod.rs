@@ -2,7 +2,15 @@
 
 use crate::{
     config::GameConfig,
-    world::{components::*, systems::*, EntityId, World},
+    world::{
+        component::{
+            CameraComponent, ControlComponent, PlayerComponent, PositionComponent, ScoreComponent,
+            VisualComponent,
+        },
+        resource::GameTime,
+        system::*,
+        EntityId, World,
+    },
 };
 use raylib::prelude::*;
 
@@ -40,31 +48,38 @@ impl GameBuilder {
         }
     }
 
+    fn setup_resources(&mut self) {
+        self.world.resources.insert_game_time(GameTime {
+            total: 0.0,
+            delta: 0.0,
+        });
+    }
+
     fn setup_player(&mut self) -> EntityId {
         let player = self.world.create_entity();
 
-        self.world.add_position(
+        self.world.components.add_position(
             player,
             PositionComponent {
                 coords: Vector2::zero(),
             },
         );
 
-        self.world.add_player(
+        self.world.components.add_player(
             player,
             PlayerComponent {
                 speed: self.config.player_speed,
             },
         );
 
-        self.world.add_controls(
+        self.world.components.add_controls(
             player,
             ControlComponent {
                 movement: Vector2::zero(),
             },
         );
 
-        self.world.add_visual(
+        self.world.components.add_visual(
             player,
             VisualComponent {
                 color: Color::RED,
@@ -78,14 +93,14 @@ impl GameBuilder {
     fn setup_camera(&mut self, following_entity: EntityId) {
         let camera = self.world.create_entity();
 
-        self.world.add_position(
+        self.world.components.add_position(
             camera,
             PositionComponent {
                 coords: Vector2::zero(),
             },
         );
 
-        self.world.add_camera(
+        self.world.components.add_camera(
             camera,
             CameraComponent {
                 offset: Vector2::new(
@@ -114,14 +129,14 @@ impl GameBuilder {
 
             let dot = self.world.create_entity();
 
-            self.world.add_position(
+            self.world.components.add_position(
                 dot,
                 PositionComponent {
                     coords: Vector2::new(x, y),
                 },
             );
 
-            self.world.add_visual(
+            self.world.components.add_visual(
                 dot,
                 VisualComponent {
                     color: Color::GRAY,
@@ -135,12 +150,14 @@ impl GameBuilder {
         let score_entity = self.world.create_entity();
 
         self.world
+            .components
             .add_score(score_entity, ScoreComponent { value: 0 });
     }
 
     pub fn build(mut self) -> Game {
         let player = self.setup_player();
         self.setup_camera(player);
+        self.setup_resources();
         self.setup_background();
         self.setup_score();
 
@@ -177,6 +194,7 @@ impl Game {
     }
 
     fn handle_playing_state(&mut self) {
+        UpdateTimeSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         HandleInputSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle, &self.config);
@@ -187,5 +205,6 @@ impl Game {
 
         RenderVisualsSystem::run(&mut self.world, &mut draw_handle, &self.config);
         RenderScoreSystem::run(&mut self.world, &mut draw_handle, &self.config);
+        RenderGameTimeSystem::run(&mut self.world, &mut draw_handle, &self.config)
     }
 }
