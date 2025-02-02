@@ -13,7 +13,9 @@ pub struct GameConfig {
 
     pub camera_zoom: f32,
 
+    /// Size of the player's visual representation in pixels
     pub player_size: f32,
+    /// Player movement speed in units per second
     pub player_speed: f32,
 
     pub key_move_right: KeyboardKey,
@@ -47,8 +49,8 @@ impl Default for GameConfig {
 
             camera_zoom: 1.0,
 
-            player_size: 8.0,
-            player_speed: 0.1,
+            player_size: 8.,
+            player_speed: 100.,
 
             key_move_right: KeyboardKey::KEY_RIGHT,
             key_move_left: KeyboardKey::KEY_LEFT,
