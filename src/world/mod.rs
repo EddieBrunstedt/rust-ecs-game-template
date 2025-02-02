@@ -9,7 +9,7 @@ pub type EntityId = u64;
 pub type PlayerId = u64;
 
 pub struct World {
-    // Entities
+    /// Note that the order of the entities is not guaranteed.
     entity_ids: Vec<EntityId>,
     next_entity_id: EntityId,
     next_player_id: PlayerId,
@@ -131,6 +131,22 @@ impl World {
 
     pub fn get_visual(&self, entity: EntityId) -> Option<&VisualComponent> {
         self.visuals.get(entity)
+    }
+
+    pub fn remove_entity(&mut self, entity: EntityId) {
+        if let Some(pos) = self.entity_ids.iter().position(|&id| id == entity) {
+            self.entity_ids.swap_remove(pos);
+        }
+
+        self.cameras.entries.remove(&entity);
+        self.controls.entries.remove(&entity);
+        self.players.entries.remove(&entity);
+        self.positions.entries.remove(&entity);
+        self.visuals.entries.remove(&entity);
+    }
+
+    pub fn is_player(&self, entity: EntityId) -> bool {
+        self.players.get(entity).is_some()
     }
 
     fn expect_component<T>(

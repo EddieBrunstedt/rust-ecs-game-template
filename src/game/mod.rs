@@ -142,6 +142,7 @@ impl Game {
     fn handle_playing_state(&mut self) {
         HandleInputSystem::run(&mut self.world, &self.raylib_handle);
         UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle);
+        CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle);
         CameraFollowSystem::run(&mut self.world, &self.raylib_handle);
         RenderVisualsSystem::run(
             &mut self.world,

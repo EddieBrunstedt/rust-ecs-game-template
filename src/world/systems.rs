@@ -10,9 +10,54 @@ pub trait RenderSystem {
 }
 
 pub struct CameraFollowSystem;
+pub struct CollisionDetectionSystem;
 pub struct HandleInputSystem;
 pub struct RenderVisualsSystem;
 pub struct UpdatePlayerPositionsSystem;
+
+impl UpdateSystem for CollisionDetectionSystem {
+    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
+        let player_data: Vec<(u64, Vector2, f32)> = world
+            .entity_ids
+            .iter()
+            .filter_map(|&entity| {
+                if world.is_player(entity) {
+                    let position = world.expect_position(entity);
+                    let visual = world.get_visual(entity)?;
+                    Some((entity, position.0, visual.size))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        let entities_to_remove: Vec<EntityId> = world
+            .entity_ids
+            .iter()
+            .filter_map(|&entity| {
+                if world.is_player(entity) {
+                    return None;
+                }
+
+                let position = world.expect_position(entity);
+                let visual = world.get_visual(entity)?;
+
+                // Check collision with any player
+                for (_player_entity, player_pos, player_size) in &player_data {
+                    let distance = (*player_pos - position.0).length();
+                    if distance < (player_size + visual.size) {
+                        return Some(entity);
+                    }
+                }
+                None
+            })
+            .collect();
+
+        for entity in entities_to_remove {
+            world.remove_entity(entity);
+        }
+    }
+}
 
 impl UpdateSystem for HandleInputSystem {
     fn run(world: &mut World, raylib_handle: &RaylibHandle) {
