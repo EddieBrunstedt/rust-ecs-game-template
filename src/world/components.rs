@@ -18,8 +18,6 @@ pub struct VisualComponent {
 
 /// Identifies an entity as a player and stores player-specific data.
 pub struct PlayerComponent {
-    /// Whether this player is controlled locally
-    pub is_local: bool,
     /// Movement speed multiplier
     pub speed: f32,
 }

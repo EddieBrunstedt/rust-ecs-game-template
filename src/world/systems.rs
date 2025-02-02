@@ -100,28 +100,17 @@ impl UpdateSystem for HandleInputSystem {
             .entity_ids
             .iter()
             .filter_map(|entity| {
-                let player = world.player(*entity)?;
-                world.controls(*entity);
+                world.player(*entity)?;
+                world.expect_controls(*entity);
 
-                if player.is_local {
-                    let mut movement = Vector2::zero();
-                    if raylib_handle.is_key_down(config.key_move_right) {
-                        movement.x += 1.0
-                    }
-                    if raylib_handle.is_key_down(config.key_move_left) {
-                        movement.x -= 1.0
-                    }
-                    if raylib_handle.is_key_down(config.key_move_down) {
-                        movement.y += 1.0
-                    }
-                    if raylib_handle.is_key_down(config.key_move_up) {
-                        movement.y -= 1.0
-                    }
+                let movement = Vector2 {
+                    x: raylib_handle.is_key_down(config.key_move_right) as i32 as f32
+                        - raylib_handle.is_key_down(config.key_move_left) as i32 as f32,
+                    y: raylib_handle.is_key_down(config.key_move_down) as i32 as f32
+                        - raylib_handle.is_key_down(config.key_move_up) as i32 as f32,
+                };
 
-                    Some((*entity, movement))
-                } else {
-                    todo!("Implement movement for network players");
-                }
+                Some((*entity, movement))
             })
             .collect();
 
@@ -131,7 +120,6 @@ impl UpdateSystem for HandleInputSystem {
             } else {
                 movement
             };
-
             world.expect_controls_mut(entity).movement = movement;
         }
     }

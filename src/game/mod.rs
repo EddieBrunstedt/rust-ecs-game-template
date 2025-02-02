@@ -53,7 +53,6 @@ impl GameBuilder {
         self.world.add_player(
             player,
             PlayerComponent {
-                is_local: true,
                 speed: self.config.player_speed,
             },
         );
