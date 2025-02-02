@@ -2,16 +2,17 @@
 
 use super::EntityId;
 use super::World;
+use crate::config::GameConfig;
 use raylib::prelude::*;
 
 /// Defines behavior for systems that render to the screen.
 pub trait RenderSystem {
-    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle);
+    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle, config: &GameConfig);
 }
 
 /// Defines behavior for systems that update game state.
 pub trait UpdateSystem {
-    fn run(world: &mut World, raylib_handle: &RaylibHandle);
+    fn run(world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig);
 }
 
 /// Updates camera position to follow its target entity.
@@ -33,7 +34,7 @@ pub struct RenderVisualsSystem;
 pub struct UpdatePlayerPositionsSystem;
 
 impl UpdateSystem for CameraFollowSystem {
-    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
+    fn run(world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
         let updates: Vec<_> = world
             .entity_ids
             .iter()
@@ -52,8 +53,7 @@ impl UpdateSystem for CameraFollowSystem {
 }
 
 impl UpdateSystem for CollisionDetectionSystem {
-    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
-        // First, find the score entity
+    fn run(world: &mut World, _raylib_handle: &RaylibHandle, config: &GameConfig) {
         let score_entity = world
             .entity_ids
             .iter()
@@ -89,7 +89,7 @@ impl UpdateSystem for CollisionDetectionSystem {
                 for (_player_entity, player_pos, player_size) in &player_data {
                     let distance = (*player_pos - position.0).length();
                     if distance < (player_size + visual.size) {
-                        collision_count += 1;
+                        collision_count += config.points_per_collision;
                         return Some(entity);
                     }
                 }
@@ -97,7 +97,6 @@ impl UpdateSystem for CollisionDetectionSystem {
             })
             .collect();
 
-        // Update score if there were any collisions
         if collision_count > 0 {
             if let Some(score_entity) = score_entity {
                 if let Some(score) = world.score_mut(score_entity) {
@@ -113,7 +112,7 @@ impl UpdateSystem for CollisionDetectionSystem {
 }
 
 impl UpdateSystem for HandleInputSystem {
-    fn run(world: &mut World, raylib_handle: &RaylibHandle) {
+    fn run(world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
         let control_updates: Vec<(EntityId, Vector2)> = world
             .entity_ids
             .iter()
@@ -150,15 +149,21 @@ impl UpdateSystem for HandleInputSystem {
 }
 
 impl RenderSystem for RenderScoreSystem {
-    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle) {
+    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle, config: &GameConfig) {
         if let Some(score) = world.entity_ids.iter().find_map(|e| world.score(*e)) {
-            draw_handle.draw_text(&format!("Score: {}", score.value), 10, 10, 20, Color::WHITE);
+            draw_handle.draw_text(
+                &format!("Score: {}", score.value),
+                config.score_text_x,
+                config.score_text_y,
+                config.score_font_size,
+                config.score_text_color,
+            );
         }
     }
 }
 
 impl RenderSystem for RenderVisualsSystem {
-    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle) {
+    fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle, _config: &GameConfig) {
         let camera_data = world
             .entity_ids
             .iter()
@@ -195,7 +200,7 @@ impl RenderSystem for RenderVisualsSystem {
 }
 
 impl UpdateSystem for UpdatePlayerPositionsSystem {
-    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
+    fn run(world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
         let updates: Vec<(EntityId, Vector2)> = world
             .entity_ids
             .iter()

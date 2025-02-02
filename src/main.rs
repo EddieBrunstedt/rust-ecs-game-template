@@ -3,10 +3,9 @@
 mod config;
 mod game;
 mod world;
-use config::DEFAULT_CONFIG;
 use game::GameBuilder;
 
 fn main() {
-    let mut game = GameBuilder::new(&DEFAULT_CONFIG).build();
+    let mut game = GameBuilder::new().build();
     game.run();
 }

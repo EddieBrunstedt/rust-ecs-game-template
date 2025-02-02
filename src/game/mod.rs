@@ -8,9 +8,10 @@ use raylib::prelude::*;
 
 /// Main game state container and controller.
 pub struct Game {
+    config: GameConfig,
     raylib_handle: RaylibHandle,
-    state: GameState,
     raylib_thread: RaylibThread,
+    state: GameState,
     world: World,
 }
 
@@ -26,16 +27,16 @@ pub enum GameState {
 
 /// Builder pattern implementation for game initialization.
 /// Handles the setup of core game systems and entities.
-pub struct GameBuilder<'a> {
+pub struct GameBuilder {
     world: World,
-    config: &'a GameConfig,
+    config: GameConfig,
 }
 
-impl<'a> GameBuilder<'a> {
-    pub fn new(config: &'a GameConfig) -> Self {
+impl GameBuilder {
+    pub fn new() -> Self {
         Self {
             world: World::new(),
-            config,
+            config: GameConfig::default(),
         }
     }
 
@@ -92,14 +93,14 @@ impl<'a> GameBuilder<'a> {
     }
 
     fn setup_background(&mut self) {
-        let spins = 4.0;
-        let points = 100;
-        let radius_step = 50.0;
-        let min_radius = 50.0;
+        let points = self.config.background_dots_count;
 
         for i in 0..points {
-            let angle = (i as f32 / points as f32) * spins * std::f32::consts::TAU;
-            let radius = min_radius + (radius_step * angle / std::f32::consts::TAU);
+            let angle = (i as f32 / points as f32)
+                * self.config.background_spiral_spins
+                * std::f32::consts::TAU;
+            let radius = self.config.background_spiral_min_radius
+                + (self.config.background_spiral_radius_step * angle / std::f32::consts::TAU);
 
             let x = angle.cos() * radius;
             let y = angle.sin() * radius;
@@ -132,14 +133,15 @@ impl<'a> GameBuilder<'a> {
         self.setup_background();
         self.setup_score();
 
-        let (raylib_handle, thread) = raylib::init()
+        let (raylib_handle, raylib_thread) = raylib::init()
             .size(self.config.window_width, self.config.window_height)
             .title(self.config.window_title)
             .build();
 
         Game {
+            config: self.config,
             raylib_handle,
-            raylib_thread: thread,
+            raylib_thread,
             state: GameState::Playing,
             world: self.world,
         }
@@ -164,15 +166,15 @@ impl Game {
     }
 
     fn handle_playing_state(&mut self) {
-        HandleInputSystem::run(&mut self.world, &self.raylib_handle);
-        UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle);
-        CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle);
-        CameraFollowSystem::run(&mut self.world, &self.raylib_handle);
+        HandleInputSystem::run(&mut self.world, &self.raylib_handle, &self.config);
+        UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle, &self.config);
+        CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle, &self.config);
+        CameraFollowSystem::run(&mut self.world, &self.raylib_handle, &self.config);
 
         let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
         draw_handle.clear_background(Color::BLACK);
 
-        RenderVisualsSystem::run(&mut self.world, &mut draw_handle);
-        RenderScoreSystem::run(&mut self.world, &mut draw_handle);
+        RenderVisualsSystem::run(&mut self.world, &mut draw_handle, &self.config);
+        RenderScoreSystem::run(&mut self.world, &mut draw_handle, &self.config);
     }
 }
