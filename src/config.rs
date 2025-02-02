@@ -9,6 +9,8 @@ pub struct GameConfig {
     pub window_height: i32,
     pub window_width: i32,
 
+    pub background_color: Color,
+
     pub camera_zoom: f32,
 
     pub player_size: f32,
@@ -40,6 +42,8 @@ impl Default for GameConfig {
             window_title: "The Game",
             window_height: 480,
             window_width: 640,
+
+            background_color: Color::BLACK,
 
             camera_zoom: 1.0,
 

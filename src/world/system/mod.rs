@@ -1,4 +1,5 @@
 mod camera_follow;
+mod clear_screen;
 mod collosion_detection;
 mod handle_input;
 mod render_game_time;
@@ -12,6 +13,7 @@ use crate::config::GameConfig;
 use raylib::prelude::*;
 
 pub use camera_follow::CameraFollowSystem;
+pub use clear_screen::ClearScreenSystem;
 pub use collosion_detection::CollisionDetectionSystem;
 pub use handle_input::HandleInputSystem;
 pub use render_game_time::RenderGameTimeSystem;
