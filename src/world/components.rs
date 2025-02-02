@@ -4,7 +4,9 @@ use super::EntityId;
 use raylib::prelude::*;
 
 /// Represents an entity's position in 2D space.
-pub struct PositionComponent(pub Vector2);
+pub struct PositionComponent {
+    pub coords: Vector2,
+}
 
 /// Visual representation properties for an entity.
 pub struct VisualComponent {

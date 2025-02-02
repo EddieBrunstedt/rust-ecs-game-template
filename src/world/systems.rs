@@ -42,12 +42,12 @@ impl UpdateSystem for CameraFollowSystem {
                 let camera = world.camera(*entity)?;
                 let target_entity = camera.following_entity?;
                 let target_position = world.expect_position(target_entity);
-                Some((*entity, target_position.0))
+                Some((*entity, target_position.coords))
             })
             .collect();
 
         for (entity, new_position) in updates {
-            world.expect_position_mut(entity).0 = new_position;
+            world.expect_position_mut(entity).coords = new_position;
         }
     }
 }
@@ -67,7 +67,7 @@ impl UpdateSystem for CollisionDetectionSystem {
                 if world.has_player(entity) {
                     let position = world.expect_position(entity);
                     let visual = world.visual(entity)?;
-                    Some((entity, position.0, visual.size))
+                    Some((entity, position.coords, visual.size))
                 } else {
                     None
                 }
@@ -87,7 +87,7 @@ impl UpdateSystem for CollisionDetectionSystem {
                 let visual = world.visual(entity)?;
 
                 for (_player_entity, player_pos, player_size) in &player_data {
-                    let distance = (*player_pos - position.0).length();
+                    let distance = (*player_pos - position.coords).length();
                     if distance < (player_size + visual.size) {
                         collision_count += config.points_per_collision;
                         return Some(entity);
@@ -170,14 +170,14 @@ impl RenderSystem for RenderScoreSystem {
 
 impl RenderSystem for RenderVisualsSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle, _config: &GameConfig) {
-        let (camera, pos) = world
+        let (camera, position) = world
             .entity_ids
             .iter()
             .find_map(|&id| Some((world.camera(id)?, world.expect_position(id))))
             .expect("No camera entity found in world");
 
         let mut draw = draw_handle.begin_mode2D(Camera2D {
-            target: pos.0,
+            target: position.coords,
             offset: camera.offset,
             rotation: camera.rotation,
             zoom: camera.zoom,
@@ -187,8 +187,13 @@ impl RenderSystem for RenderVisualsSystem {
             .entity_ids
             .iter()
             .filter_map(|&id| Some((world.position(id)?, world.visual(id)?)))
-            .for_each(|(pos, visual)| {
-                draw.draw_circle(pos.0.x as i32, pos.0.y as i32, visual.size, visual.color)
+            .for_each(|(position, visual)| {
+                draw.draw_circle(
+                    position.coords.x as i32,
+                    position.coords.y as i32,
+                    visual.size,
+                    visual.color,
+                )
             });
     }
 }
@@ -202,13 +207,13 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
                 let player = world.player(*entity)?;
                 let control = world.expect_controls(*entity);
                 let position = world.expect_position(*entity);
-                let new_position = position.0 + (control.movement * player.speed);
+                let new_position = position.coords + (control.movement * player.speed);
                 Some((*entity, new_position))
             })
             .collect();
 
         for (entity, new_position) in updates {
-            world.expect_position_mut(entity).0 = new_position;
+            world.expect_position_mut(entity).coords = new_position;
         }
     }
 }

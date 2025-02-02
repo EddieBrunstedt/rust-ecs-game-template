@@ -43,8 +43,12 @@ impl GameBuilder {
     fn setup_player(&mut self) -> EntityId {
         let player = self.world.create_entity();
 
-        self.world
-            .add_position(player, PositionComponent(Vector2::new(0.0, 0.0)));
+        self.world.add_position(
+            player,
+            PositionComponent {
+                coords: Vector2::zero(),
+            },
+        );
 
         self.world.add_player(
             player,
@@ -75,8 +79,12 @@ impl GameBuilder {
     fn setup_camera(&mut self, following_entity: EntityId) {
         let camera = self.world.create_entity();
 
-        self.world
-            .add_position(camera, PositionComponent(Vector2::zero()));
+        self.world.add_position(
+            camera,
+            PositionComponent {
+                coords: Vector2::zero(),
+            },
+        );
 
         self.world.add_camera(
             camera,
@@ -107,8 +115,12 @@ impl GameBuilder {
 
             let dot = self.world.create_entity();
 
-            self.world
-                .add_position(dot, PositionComponent(Vector2::new(x, y)));
+            self.world.add_position(
+                dot,
+                PositionComponent {
+                    coords: Vector2::new(x, y),
+                },
+            );
 
             self.world.add_visual(
                 dot,
