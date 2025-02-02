@@ -10,10 +10,10 @@ pub trait RenderSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle);
 }
 
-pub struct UpdatePlayerPositionsSystem;
-pub struct RenderVisualsSystem;
-pub struct HandleInputSystem;
 pub struct CameraFollowSystem;
+pub struct HandleInputSystem;
+pub struct RenderVisualsSystem;
+pub struct UpdatePlayerPositionsSystem;
 
 impl UpdateSystem for HandleInputSystem {
     fn run(world: &mut World, raylib_handle: &RaylibHandle) {
@@ -27,16 +27,16 @@ impl UpdateSystem for HandleInputSystem {
                 if player.is_local {
                     let mut movement = Vector2::zero();
                     if raylib_handle.is_key_down(KeyboardKey::KEY_RIGHT) {
-                        movement.x += 1.0;
+                        movement.x += 1.0
                     }
                     if raylib_handle.is_key_down(KeyboardKey::KEY_LEFT) {
-                        movement.x -= 1.0;
+                        movement.x -= 1.0
                     }
                     if raylib_handle.is_key_down(KeyboardKey::KEY_DOWN) {
-                        movement.y += 1.0;
+                        movement.y += 1.0
                     }
                     if raylib_handle.is_key_down(KeyboardKey::KEY_UP) {
-                        movement.y -= 1.0;
+                        movement.y -= 1.0
                     }
 
                     Some((*entity, movement))
@@ -47,12 +47,7 @@ impl UpdateSystem for HandleInputSystem {
             .collect();
 
         for (entity, movement) in control_updates {
-            world.add_controls(
-                entity,
-                ControlComponent {
-                    movement: movement.normalized(),
-                },
-            );
+            world.expect_control_mut(entity).movement = movement.normalized();
         }
     }
 }

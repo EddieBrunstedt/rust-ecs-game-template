@@ -97,6 +97,10 @@ impl World {
         self.positions.get_mut(entity)
     }
 
+    pub fn expect_position(&self, entity: EntityId) -> &PositionComponent {
+        self.expect_component(entity, World::get_position, "PositionComponent")
+    }
+
     pub fn expect_position_mut(&mut self, entity: EntityId) -> &mut PositionComponent {
         self.expect_component_mut(entity, World::get_position_mut, "PositionComponent")
     }
@@ -117,12 +121,16 @@ impl World {
         self.controls.get(entity)
     }
 
+    pub fn get_control_mut(&mut self, entity: EntityId) -> Option<&mut ControlComponent> {
+        self.controls.get_mut(entity)
+    }
+
     pub fn expect_control(&self, entity: EntityId) -> &ControlComponent {
         self.expect_component(entity, World::get_control, "ControlComponent")
     }
 
-    pub fn expect_position(&self, entity: EntityId) -> &PositionComponent {
-        self.expect_component(entity, World::get_position, "Position")
+    pub fn expect_control_mut(&mut self, entity: EntityId) -> &mut ControlComponent {
+        self.expect_component_mut(entity, World::get_control_mut, "ControlComponent")
     }
 
     fn expect_component<T>(
