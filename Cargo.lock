@@ -159,15 +159,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
 
 [[package]]
-name = "game"
-version = "0.1.0"
-dependencies = [
- "paste",
- "rand",
- "raylib",
-]
-
-[[package]]
 name = "getrandom"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -470,6 +461,15 @@ name = "regex-syntax"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
+
+[[package]]
+name = "rust-ecs-game-engine"
+version = "0.1.0"
+dependencies = [
+ "paste",
+ "rand",
+ "raylib",
+]
 
 [[package]]
 name = "rustc-hash"
