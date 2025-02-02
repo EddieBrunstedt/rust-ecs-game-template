@@ -14,6 +14,12 @@ pub struct GameConfig {
     pub player_size: f32,
     pub player_speed: f32,
 
+    pub key_move_right: KeyboardKey,
+    pub key_move_left: KeyboardKey,
+    pub key_move_up: KeyboardKey,
+    pub key_move_down: KeyboardKey,
+    pub normalize_movement: bool,
+
     pub background_dot_size: f32,
     pub background_dots_count: usize,
     pub background_spiral_min_radius: f32,
@@ -39,6 +45,12 @@ impl Default for GameConfig {
 
             player_size: 8.0,
             player_speed: 0.1,
+
+            key_move_right: KeyboardKey::KEY_RIGHT,
+            key_move_left: KeyboardKey::KEY_LEFT,
+            key_move_up: KeyboardKey::KEY_UP,
+            key_move_down: KeyboardKey::KEY_DOWN,
+            normalize_movement: true,
 
             background_dot_size: 4.0,
             background_dots_count: 100,

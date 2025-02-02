@@ -112,7 +112,7 @@ impl UpdateSystem for CollisionDetectionSystem {
 }
 
 impl UpdateSystem for HandleInputSystem {
-    fn run(world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
+    fn run(world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig) {
         let control_updates: Vec<(EntityId, Vector2)> = world
             .entity_ids
             .iter()
@@ -122,16 +122,16 @@ impl UpdateSystem for HandleInputSystem {
 
                 if player.is_local {
                     let mut movement = Vector2::zero();
-                    if raylib_handle.is_key_down(KeyboardKey::KEY_RIGHT) {
+                    if raylib_handle.is_key_down(config.key_move_right) {
                         movement.x += 1.0
                     }
-                    if raylib_handle.is_key_down(KeyboardKey::KEY_LEFT) {
+                    if raylib_handle.is_key_down(config.key_move_left) {
                         movement.x -= 1.0
                     }
-                    if raylib_handle.is_key_down(KeyboardKey::KEY_DOWN) {
+                    if raylib_handle.is_key_down(config.key_move_down) {
                         movement.y += 1.0
                     }
-                    if raylib_handle.is_key_down(KeyboardKey::KEY_UP) {
+                    if raylib_handle.is_key_down(config.key_move_up) {
                         movement.y -= 1.0
                     }
 
@@ -143,7 +143,13 @@ impl UpdateSystem for HandleInputSystem {
             .collect();
 
         for (entity, movement) in control_updates {
-            world.expect_controls_mut(entity).movement = movement.normalized();
+            let movement = if config.normalize_movement {
+                movement.normalized()
+            } else {
+                movement
+            };
+
+            world.expect_controls_mut(entity).movement = movement;
         }
     }
 }
