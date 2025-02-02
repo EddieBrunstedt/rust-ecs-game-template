@@ -12,9 +12,9 @@ impl RenderSystem for RenderGameTimeSystem {
         draw_handle.draw_text(
             &format!("Time: {:.1}", game_time.total),
             config.score_text_x,
-            config.score_text_y + config.score_font_size + 5,
-            config.score_font_size,
-            config.score_text_color,
+            config.score_text_y + config.hud_font_size + 5,
+            config.hud_font_size,
+            config.hud_font_color,
         );
     }
 }
