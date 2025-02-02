@@ -60,17 +60,6 @@ impl World {
         }
     }
 
-    pub fn create_entity(&mut self) -> EntityId {
-        let entity_id = self.next_entity_id;
-        self.entity_ids.push(entity_id);
-        self.next_entity_id += 1;
-        entity_id
-    }
-
-    pub fn add_position(&mut self, entity: EntityId, component: PositionComponent) {
-        self.positions.insert(entity, component);
-    }
-
     pub fn add_camera(&mut self, entity: EntityId, component: CameraComponent) {
         self.cameras.insert(entity, component);
     }
@@ -79,22 +68,33 @@ impl World {
         self.controls.insert(entity, component);
     }
 
-    pub fn add_visual(&mut self, entity: EntityId, component: VisualComponent) {
-        self.visuals.insert(entity, component);
-    }
-
     pub fn add_player(&mut self, entity: EntityId, mut component: PlayerComponent) {
         component.id = self.next_player_id;
         self.players.insert(entity, component);
         self.next_player_id += 1;
     }
 
-    pub fn get_position(&self, entity: EntityId) -> Option<&PositionComponent> {
-        self.positions.get(entity)
+    pub fn add_position(&mut self, entity: EntityId, component: PositionComponent) {
+        self.positions.insert(entity, component);
     }
 
-    pub fn get_position_mut(&mut self, entity: EntityId) -> Option<&mut PositionComponent> {
-        self.positions.get_mut(entity)
+    pub fn add_visual(&mut self, entity: EntityId, component: VisualComponent) {
+        self.visuals.insert(entity, component);
+    }
+
+    pub fn create_entity(&mut self) -> EntityId {
+        let entity_id = self.next_entity_id;
+        self.entity_ids.push(entity_id);
+        self.next_entity_id += 1;
+        entity_id
+    }
+
+    pub fn expect_control(&self, entity: EntityId) -> &ControlComponent {
+        self.expect_component(entity, World::get_control, "ControlComponent")
+    }
+
+    pub fn expect_control_mut(&mut self, entity: EntityId) -> &mut ControlComponent {
+        self.expect_component_mut(entity, World::get_control_mut, "ControlComponent")
     }
 
     pub fn expect_position(&self, entity: EntityId) -> &PositionComponent {
@@ -103,14 +103,6 @@ impl World {
 
     pub fn expect_position_mut(&mut self, entity: EntityId) -> &mut PositionComponent {
         self.expect_component_mut(entity, World::get_position_mut, "PositionComponent")
-    }
-
-    pub fn get_visual(&self, entity: EntityId) -> Option<&VisualComponent> {
-        self.visuals.get(entity)
-    }
-
-    pub fn get_player(&self, entity: EntityId) -> Option<&PlayerComponent> {
-        self.players.get(entity)
     }
 
     pub fn get_camera(&self, entity: EntityId) -> Option<&CameraComponent> {
@@ -125,12 +117,20 @@ impl World {
         self.controls.get_mut(entity)
     }
 
-    pub fn expect_control(&self, entity: EntityId) -> &ControlComponent {
-        self.expect_component(entity, World::get_control, "ControlComponent")
+    pub fn get_player(&self, entity: EntityId) -> Option<&PlayerComponent> {
+        self.players.get(entity)
     }
 
-    pub fn expect_control_mut(&mut self, entity: EntityId) -> &mut ControlComponent {
-        self.expect_component_mut(entity, World::get_control_mut, "ControlComponent")
+    pub fn get_position(&self, entity: EntityId) -> Option<&PositionComponent> {
+        self.positions.get(entity)
+    }
+
+    pub fn get_position_mut(&mut self, entity: EntityId) -> Option<&mut PositionComponent> {
+        self.positions.get_mut(entity)
+    }
+
+    pub fn get_visual(&self, entity: EntityId) -> Option<&VisualComponent> {
+        self.visuals.get(entity)
     }
 
     fn expect_component<T>(

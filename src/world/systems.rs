@@ -51,6 +51,45 @@ impl UpdateSystem for HandleInputSystem {
     }
 }
 
+impl UpdateSystem for CameraFollowSystem {
+    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
+        let updates: Vec<_> = world
+            .entity_ids
+            .iter()
+            .filter_map(|entity| {
+                let camera = world.get_camera(*entity)?;
+                let target_entity = camera.following_entity?;
+                let target_position = world.expect_position(target_entity);
+                Some((*entity, target_position.0))
+            })
+            .collect();
+
+        for (entity, new_position) in updates {
+            world.expect_position_mut(entity).0 = new_position;
+        }
+    }
+}
+
+impl UpdateSystem for UpdatePlayerPositionsSystem {
+    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
+        let updates: Vec<(EntityId, Vector2)> = world
+            .entity_ids
+            .iter()
+            .filter_map(|entity| {
+                let player = world.get_player(*entity)?;
+                let control = world.expect_control(*entity);
+                let position = world.expect_position(*entity);
+                let new_position = position.0 + (control.movement * player.speed);
+                Some((*entity, new_position))
+            })
+            .collect();
+
+        for (entity, new_position) in updates {
+            world.expect_position_mut(entity).0 = new_position;
+        }
+    }
+}
+
 impl RenderSystem for RenderVisualsSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle) {
         draw_handle.clear_background(Color::BLACK);
@@ -87,45 +126,6 @@ impl RenderSystem for RenderVisualsSystem {
                     visual.color,
                 );
             }
-        }
-    }
-}
-
-impl UpdateSystem for CameraFollowSystem {
-    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
-        let updates: Vec<_> = world
-            .entity_ids
-            .iter()
-            .filter_map(|entity| {
-                let camera = world.get_camera(*entity)?;
-                let target_entity = camera.following_entity?;
-                let target_position = world.expect_position(target_entity);
-                Some((*entity, target_position.0))
-            })
-            .collect();
-
-        for (entity, new_position) in updates {
-            world.expect_position_mut(entity).0 = new_position;
-        }
-    }
-}
-
-impl UpdateSystem for UpdatePlayerPositionsSystem {
-    fn run(world: &mut World, _raylib_handle: &RaylibHandle) {
-        let updates: Vec<(EntityId, Vector2)> = world
-            .entity_ids
-            .iter()
-            .filter_map(|entity| {
-                let player = world.get_player(*entity)?;
-                let control = world.expect_control(*entity);
-                let position = world.expect_position(*entity);
-                let new_position = position.0 + (control.movement * player.speed);
-                Some((*entity, new_position))
-            })
-            .collect();
-
-        for (entity, new_position) in updates {
-            world.expect_position_mut(entity).0 = new_position;
         }
     }
 }
