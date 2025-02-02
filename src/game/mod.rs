@@ -205,5 +205,6 @@ impl Game {
 
         RenderVisualsSystem::run(&mut self.world, &mut draw_handle, &self.config);
         RenderScoreSystem::run(&mut self.world, &mut draw_handle, &self.config);
+        RenderGameTimeSystem::run(&mut self.world, &mut draw_handle, &self.config)
     }
 }

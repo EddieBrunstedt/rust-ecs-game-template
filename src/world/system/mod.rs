@@ -1,6 +1,7 @@
 mod camera_follow;
 mod collosion_detection;
 mod handle_input;
+mod render_game_time;
 mod render_score;
 mod render_visuals;
 mod update_player_positions;
@@ -13,6 +14,7 @@ use raylib::prelude::*;
 pub use camera_follow::CameraFollowSystem;
 pub use collosion_detection::CollisionDetectionSystem;
 pub use handle_input::HandleInputSystem;
+pub use render_game_time::RenderGameTimeSystem;
 pub use render_score::RenderScoreSystem;
 pub use render_visuals::RenderVisualsSystem;
 pub use update_player_positions::UpdatePlayerPositionsSystem;

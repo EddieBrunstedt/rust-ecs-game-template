@@ -20,15 +20,5 @@ impl RenderSystem for RenderScoreSystem {
                 config.score_text_color,
             );
         }
-
-        if let Some(game_time) = world.resources.game_time() {
-            draw_handle.draw_text(
-                &format!("Time: {:.1}", game_time.total),
-                config.score_text_x,
-                config.score_text_y + config.score_font_size + 5,
-                config.score_font_size,
-                config.score_text_color,
-            );
-        }
     }
 }
