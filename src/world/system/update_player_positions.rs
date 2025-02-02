@@ -9,7 +9,9 @@ use raylib::prelude::*;
 pub struct UpdatePlayerPositionsSystem;
 
 impl UpdateSystem for UpdatePlayerPositionsSystem {
-    fn run(world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
+    fn run(world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
+        let delta_time = raylib_handle.get_frame_time();
+
         let updates: Vec<(EntityId, Vector2)> = world
             .entity_ids
             .iter()
@@ -17,7 +19,8 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
                 let player = world.components.player(*entity)?;
                 let control = world.components.expect_controls(*entity);
                 let position = world.components.expect_position(*entity);
-                let new_position = position.coords + (control.movement * player.speed);
+                let frame_movement = control.movement.scale_by(player.speed * delta_time);
+                let new_position = position.coords + frame_movement;
                 Some((*entity, new_position))
             })
             .collect();

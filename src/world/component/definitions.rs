@@ -21,7 +21,7 @@ pub struct ControlComponent {
 
 /// Identifies an entity as a player and stores player-specific data.
 pub struct PlayerComponent {
-    /// Movement speed multiplier
+    /// Movement speed in units per second
     pub speed: f32,
 }
 

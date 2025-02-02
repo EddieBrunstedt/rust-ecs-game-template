@@ -3,10 +3,7 @@ mod definitions;
 use super::EntityId;
 use std::collections::HashMap;
 
-pub use definitions::{
-    CameraComponent, ControlComponent, PlayerComponent, PositionComponent, ScoreComponent,
-    VisualComponent,
-};
+pub use definitions::*;
 
 pub struct Components {
     storages: ComponentStorages,
