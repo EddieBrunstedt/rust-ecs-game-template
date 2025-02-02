@@ -1,5 +1,9 @@
+//! Configuration management for the game engine.
+
 use std::sync::LazyLock;
 
+/// Represents the core configuration parameters for the game.
+/// All values are static and initialized at startup.
 pub struct GameConfig {
     pub window_width: i32,
     pub window_height: i32,

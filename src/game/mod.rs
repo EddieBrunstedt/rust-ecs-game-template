@@ -1,9 +1,12 @@
+//! Core game loop and state management.
+
 use crate::{
     config::GameConfig,
     world::{components::*, systems::*, EntityId, World},
 };
 use raylib::prelude::*;
 
+/// Main game state container and controller.
 pub struct Game {
     raylib_handle: RaylibHandle,
     state: GameState,
@@ -11,6 +14,7 @@ pub struct Game {
     world: World,
 }
 
+/// Represents the different states the game can be in.
 #[allow(dead_code)]
 pub enum GameState {
     GameOver,
@@ -20,6 +24,8 @@ pub enum GameState {
     Playing,
 }
 
+/// Builder pattern implementation for game initialization.
+/// Handles the setup of core game systems and entities.
 pub struct GameBuilder<'a> {
     world: World,
     config: &'a GameConfig,

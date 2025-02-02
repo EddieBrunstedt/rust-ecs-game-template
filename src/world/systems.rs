@@ -1,18 +1,32 @@
+//! System implementations for the Entity Component System.
+
 use super::EntityId;
 use super::World;
 use raylib::prelude::*;
 
+/// Defines behavior for systems that render to the screen.
 pub trait RenderSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle);
 }
+
+/// Defines behavior for systems that update game state.
 pub trait UpdateSystem {
     fn run(world: &mut World, raylib_handle: &RaylibHandle);
 }
 
+/// Updates camera position to follow its target entity.
 pub struct CameraFollowSystem;
+
+/// Handles collision detection between entities.
 pub struct CollisionDetectionSystem;
+
+/// Processes input and updates entity control states.
 pub struct HandleInputSystem;
+
+/// Renders all visible entities to the screen.
 pub struct RenderVisualsSystem;
+
+/// Updates entity positions based on their control states.
 pub struct UpdatePlayerPositionsSystem;
 
 impl UpdateSystem for CameraFollowSystem {
