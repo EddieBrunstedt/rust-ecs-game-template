@@ -1,3 +1,7 @@
+mod definitions;
+
+pub use definitions::GameTime;
+
 pub struct Resources {
     resources: ResourceTypes,
 }
@@ -62,9 +66,4 @@ macro_rules! define_resources {
 // Define all your resources here
 define_resources! {
     game_time: GameTime,
-}
-
-pub struct GameTime {
-    pub total: f32,
-    pub delta: f32,
 }

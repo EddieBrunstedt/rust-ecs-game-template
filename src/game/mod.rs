@@ -2,7 +2,15 @@
 
 use crate::{
     config::GameConfig,
-    world::{components::*, resources::GameTime, systems::*, EntityId, World},
+    world::{
+        component::{
+            CameraComponent, ControlComponent, PlayerComponent, PositionComponent, ScoreComponent,
+            VisualComponent,
+        },
+        resource::GameTime,
+        system::*,
+        EntityId, World,
+    },
 };
 use raylib::prelude::*;
 
