@@ -8,18 +8,51 @@ use std::collections::HashMap;
 pub type EntityId = u64;
 pub type PlayerId = u64;
 
-pub struct World {
-    /// Note that the order of the entities is not guaranteed.
-    entity_ids: Vec<EntityId>,
-    next_entity_id: EntityId,
-    next_player_id: PlayerId,
+macro_rules! define_component_storages {
+    ($($name:ident: $type:ty),*) => {
+        pub struct World {
+            // Non-component fields
+            entity_ids: Vec<EntityId>,
+            next_entity_id: EntityId,
+            next_player_id: PlayerId,
 
-    // Components
-    cameras: ComponentMap<CameraComponent>,
-    controls: ComponentMap<ControlComponent>,
-    players: ComponentMap<PlayerComponent>,
-    positions: ComponentMap<PositionComponent>,
-    visuals: ComponentMap<VisualComponent>,
+            // Component storages
+            $(
+                $name: ComponentMap<$type>,
+            )*
+        }
+
+        impl World {
+            pub fn new() -> Self {
+                Self {
+                    entity_ids: Vec::new(),
+                    next_entity_id: 0,
+                    next_player_id: 0,
+                    $(
+                        $name: ComponentMap::new(),
+                    )*
+                }
+            }
+
+            pub fn remove_entity(&mut self, entity: EntityId) {
+                if let Some(pos) = self.entity_ids.iter().position(|&id| id == entity) {
+                    self.entity_ids.swap_remove(pos);
+                }
+
+                $(
+                    self.$name.entries.remove(&entity);
+                )*
+            }
+        }
+    }
+}
+
+define_component_storages! {
+    cameras: CameraComponent,
+    controls: ControlComponent,
+    players: PlayerComponent,
+    positions: PositionComponent,
+    visuals: VisualComponent
 }
 
 pub struct ComponentMap<T> {
@@ -47,19 +80,6 @@ impl<T> ComponentMap<T> {
 }
 
 impl World {
-    pub fn new() -> Self {
-        Self {
-            entity_ids: Vec::new(),
-            next_entity_id: 0,
-            next_player_id: 0,
-            cameras: ComponentMap::new(),
-            controls: ComponentMap::new(),
-            players: ComponentMap::new(),
-            positions: ComponentMap::new(),
-            visuals: ComponentMap::new(),
-        }
-    }
-
     pub fn add_camera(&mut self, entity: EntityId, component: CameraComponent) {
         self.cameras.insert(entity, component);
     }
@@ -131,18 +151,6 @@ impl World {
 
     pub fn get_visual(&self, entity: EntityId) -> Option<&VisualComponent> {
         self.visuals.get(entity)
-    }
-
-    pub fn remove_entity(&mut self, entity: EntityId) {
-        if let Some(pos) = self.entity_ids.iter().position(|&id| id == entity) {
-            self.entity_ids.swap_remove(pos);
-        }
-
-        self.cameras.entries.remove(&entity);
-        self.controls.entries.remove(&entity);
-        self.players.entries.remove(&entity);
-        self.positions.entries.remove(&entity);
-        self.visuals.entries.remove(&entity);
     }
 
     pub fn is_player(&self, entity: EntityId) -> bool {
