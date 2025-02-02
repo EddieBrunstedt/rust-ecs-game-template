@@ -12,99 +12,72 @@ use std::collections::HashMap;
 /// Unique identifier for entities within the ECS
 pub type EntityId = u64;
 
-/// This macro generates a complete Entity Component System (ECS) storage implementation.
-/// For each component type, it generates the following methods:
-///
-/// - `name(&self, entity) -> Option<&Type>`
-///   Gets an immutable reference to the component
-///
-/// - `name_mut(&mut self, entity) -> Option<&mut Type>`
-///   Gets a mutable reference to the component
-///
-/// - `expect_name(&self, entity) -> &Type`
-///   Gets an immutable reference, panics if component doesn't exist
-///
-/// - `expect_name_mut(&mut self, entity) -> &mut Type`
-///   Gets a mutable reference, panics if component doesn't exist
-///
-/// - `add_name(&mut self, entity, component)`
-///   Adds a component to an entity
-///
-/// - `has_name(&self, entity) -> bool`
-///   Checks if an entity has this component
-///
-/// # Example
-/// ```
-/// define_component_storages! {
-///     position: PositionComponent,
-///     visual: VisualComponent
-/// }
+pub struct Components {
+    storages: ComponentStorages,
+}
+
 macro_rules! define_component_storages {
     ($($name:ident: $type:ty),*) => {
-        /// Central ECS container managing all entities and their components.
-        /// Generated using the `define_component_storages` macro.
-        pub struct World {
-            /// List of all active entity IDs
-            entity_ids: Vec<EntityId>,
-            /// Counter for generating unique entity IDs
-            next_entity_id: EntityId,
-            pub resources: Resources,  // Add resources field
+        struct ComponentStorages {
             $(
                 $name: ComponentMap<$type>,
             )*
         }
 
-        #[allow(dead_code)]
-        impl World {
-            /// Creates a new empty World instance
-            pub fn new() -> Self {
+        impl ComponentStorages {
+            fn new() -> Self {
                 Self {
-                    entity_ids: Vec::new(),
-                    next_entity_id: 0,
-                    resources: Resources::new(),
                     $(
                         $name: ComponentMap::new(),
                     )*
                 }
             }
+        }
 
-            /// Removes an entity and all its components from the world
-            pub fn remove_entity(&mut self, entity: EntityId) {
-                if let Some(pos) = self.entity_ids.iter().position(|&id| id == entity) {
-                    self.entity_ids.swap_remove(pos);
+        #[allow(dead_code)]
+        impl Components {
+            pub fn new() -> Self {
+                Self {
+                    storages: ComponentStorages::new()
                 }
+            }
 
+            pub fn remove_all_components_with_entity(&mut self, entity: EntityId) {
                 $(
-                    self.$name.entries.remove(&entity);
+                    self.storages.$name.entries.remove(&entity);
                 )*
             }
 
             $(
                 pub fn $name(&self, entity: EntityId) -> Option<&$type> {
-                    self.$name.get(entity)
+                    self.storages.$name.get(entity)
                 }
 
                 paste::paste! {
                     pub fn [<$name _mut>](&mut self, entity: EntityId) -> Option<&mut $type> {
-                        self.$name.get_mut(entity)
+                        self.storages.$name.get_mut(entity)
                     }
 
                     pub fn [<expect_ $name>](&self, entity: EntityId) -> &$type {
-                        self.$name.get(entity)
+                        self.$name(entity)
                             .unwrap_or_else(|| panic!("Entity {} is missing required component: {}", entity, stringify!($type)))
                     }
 
                     pub fn [<expect_ $name _mut>](&mut self, entity: EntityId) -> &mut $type {
-                        self.$name.get_mut(entity)
+                        self.[<$name _mut>](entity)
                             .unwrap_or_else(|| panic!("Entity {} is missing required component: {}", entity, stringify!($type)))
                     }
 
                     pub fn [<add_ $name>](&mut self, entity: EntityId, component: $type) {
-                        self.$name.insert(entity, component);
+                        self.storages.$name.insert(entity, component);
                     }
 
                     pub fn [<has_ $name>](&self, entity: EntityId) -> bool {
-                        self.$name.get(entity).is_some()
+                        self.$name(entity).is_some()
+                    }
+
+                    pub fn [<remove_ $name>](&mut self, entity: EntityId) {
+                        self.storages.$name.entries.remove(&entity);
                     }
                 }
             )*
@@ -112,13 +85,36 @@ macro_rules! define_component_storages {
     }
 }
 
+pub struct World {
+    entity_ids: Vec<EntityId>,
+    next_entity_id: EntityId,
+    pub resources: Resources,
+    pub components: Components,
+}
+
 impl World {
-    /// Creates a new entity and returns its unique ID
+    pub fn new() -> Self {
+        Self {
+            entity_ids: Vec::new(),
+            next_entity_id: 0,
+            resources: Resources::new(),
+            components: Components::new(),
+        }
+    }
+
     pub fn create_entity(&mut self) -> EntityId {
         let entity_id = self.next_entity_id;
         self.entity_ids.push(entity_id);
         self.next_entity_id += 1;
         entity_id
+    }
+
+    pub fn remove_entity(&mut self, entity: EntityId) {
+        if let Some(pos) = self.entity_ids.iter().position(|&id| id == entity) {
+            self.entity_ids.swap_remove(pos);
+        }
+
+        self.components.remove_all_components_with_entity(entity);
     }
 }
 

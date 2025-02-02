@@ -50,28 +50,28 @@ impl GameBuilder {
     fn setup_player(&mut self) -> EntityId {
         let player = self.world.create_entity();
 
-        self.world.add_position(
+        self.world.components.add_position(
             player,
             PositionComponent {
                 coords: Vector2::zero(),
             },
         );
 
-        self.world.add_player(
+        self.world.components.add_player(
             player,
             PlayerComponent {
                 speed: self.config.player_speed,
             },
         );
 
-        self.world.add_controls(
+        self.world.components.add_controls(
             player,
             ControlComponent {
                 movement: Vector2::zero(),
             },
         );
 
-        self.world.add_visual(
+        self.world.components.add_visual(
             player,
             VisualComponent {
                 color: Color::RED,
@@ -85,14 +85,14 @@ impl GameBuilder {
     fn setup_camera(&mut self, following_entity: EntityId) {
         let camera = self.world.create_entity();
 
-        self.world.add_position(
+        self.world.components.add_position(
             camera,
             PositionComponent {
                 coords: Vector2::zero(),
             },
         );
 
-        self.world.add_camera(
+        self.world.components.add_camera(
             camera,
             CameraComponent {
                 offset: Vector2::new(
@@ -121,14 +121,14 @@ impl GameBuilder {
 
             let dot = self.world.create_entity();
 
-            self.world.add_position(
+            self.world.components.add_position(
                 dot,
                 PositionComponent {
                     coords: Vector2::new(x, y),
                 },
             );
 
-            self.world.add_visual(
+            self.world.components.add_visual(
                 dot,
                 VisualComponent {
                     color: Color::GRAY,
@@ -142,6 +142,7 @@ impl GameBuilder {
         let score_entity = self.world.create_entity();
 
         self.world
+            .components
             .add_score(score_entity, ScoreComponent { value: 0 });
     }
 

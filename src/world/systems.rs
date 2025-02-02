@@ -41,37 +41,46 @@ impl UpdateSystem for CameraFollowSystem {
             .entity_ids
             .iter()
             .filter_map(|entity| {
-                let camera = world.camera(*entity)?;
+                let camera = world.components.camera(*entity)?;
                 let target_entity = camera.following_entity?;
-                let target_position = world.expect_position(target_entity);
+                let target_position = world.components.expect_position(target_entity);
                 Some((*entity, target_position.coords))
             })
             .collect();
 
         for (entity, new_position) in updates {
-            world.expect_position_mut(entity).coords = new_position;
+            world.components.expect_position_mut(entity).coords = new_position;
         }
     }
 }
 
 impl UpdateSystem for CollisionDetectionSystem {
     fn run(world: &mut World, _raylib_handle: &RaylibHandle, config: &GameConfig) {
-        let score_entity = world.entity_ids.iter().find(|&&e| world.has_score(e));
+        let score_entity = world
+            .entity_ids
+            .iter()
+            .find(|&&e| world.components.has_score(e));
 
         let player_data: Vec<_> = world
             .entity_ids
             .iter()
-            .filter(|&&e| world.has_player(e))
-            .filter_map(|&e| Some((e, world.expect_position(e).coords, world.visual(e)?.size)))
+            .filter(|&&e| world.components.has_player(e))
+            .filter_map(|&e| {
+                Some((
+                    e,
+                    world.components.expect_position(e).coords,
+                    world.components.visual(e)?.size,
+                ))
+            })
             .collect();
 
         let entities_to_remove: Vec<_> = world
             .entity_ids
             .iter()
-            .filter(|&&e| !world.has_player(e))
+            .filter(|&&e| !world.components.has_player(e))
             .filter_map(|&e| {
-                let pos = world.position(e)?;
-                let size = world.visual(e)?.size;
+                let pos = world.components.position(e)?;
+                let size = world.components.visual(e)?.size;
 
                 player_data
                     .iter()
@@ -84,7 +93,7 @@ impl UpdateSystem for CollisionDetectionSystem {
 
         if collision_count > 0 {
             if let Some(&e) = score_entity {
-                if let Some(score) = world.score_mut(e) {
+                if let Some(score) = world.components.score_mut(e) {
                     score.value += collision_count;
                 }
             }
@@ -102,8 +111,8 @@ impl UpdateSystem for HandleInputSystem {
             .entity_ids
             .iter()
             .filter_map(|entity| {
-                world.player(*entity)?;
-                world.expect_controls(*entity);
+                world.components.player(*entity)?;
+                world.components.expect_controls(*entity);
 
                 let movement = Vector2 {
                     x: raylib_handle.is_key_down(config.key_move_right) as i32 as f32
@@ -122,14 +131,18 @@ impl UpdateSystem for HandleInputSystem {
             } else {
                 movement
             };
-            world.expect_controls_mut(entity).movement = movement;
+            world.components.expect_controls_mut(entity).movement = movement;
         }
     }
 }
 
 impl RenderSystem for RenderScoreSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle, config: &GameConfig) {
-        if let Some(score) = world.entity_ids.iter().find_map(|e| world.score(*e)) {
+        if let Some(score) = world
+            .entity_ids
+            .iter()
+            .find_map(|e| world.components.score(*e))
+        {
             draw_handle.draw_text(
                 &format!("Score: {}", score.value),
                 config.score_text_x,
@@ -156,7 +169,12 @@ impl RenderSystem for RenderVisualsSystem {
         let (camera, position) = world
             .entity_ids
             .iter()
-            .find_map(|&id| Some((world.camera(id)?, world.expect_position(id))))
+            .find_map(|&id| {
+                Some((
+                    world.components.camera(id)?,
+                    world.components.expect_position(id),
+                ))
+            })
             .expect("No camera entity found in world");
 
         let mut draw = draw_handle.begin_mode2D(Camera2D {
@@ -169,7 +187,7 @@ impl RenderSystem for RenderVisualsSystem {
         world
             .entity_ids
             .iter()
-            .filter_map(|&id| Some((world.position(id)?, world.visual(id)?)))
+            .filter_map(|&id| Some((world.components.position(id)?, world.components.visual(id)?)))
             .for_each(|(position, visual)| {
                 draw.draw_circle(
                     position.coords.x as i32,
@@ -187,16 +205,16 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
             .entity_ids
             .iter()
             .filter_map(|entity| {
-                let player = world.player(*entity)?;
-                let control = world.expect_controls(*entity);
-                let position = world.expect_position(*entity);
+                let player = world.components.player(*entity)?;
+                let control = world.components.expect_controls(*entity);
+                let position = world.components.expect_position(*entity);
                 let new_position = position.coords + (control.movement * player.speed);
                 Some((*entity, new_position))
             })
             .collect();
 
         for (entity, new_position) in updates {
-            world.expect_position_mut(entity).coords = new_position;
+            world.components.expect_position_mut(entity).coords = new_position;
         }
     }
 }
