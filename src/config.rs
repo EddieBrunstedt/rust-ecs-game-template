@@ -3,7 +3,6 @@
 use raylib::prelude::*;
 
 /// Represents the core configuration parameters for the game.
-/// All values are static and initialized at startup.
 pub struct GameConfig {
     pub window_title: &'static str,
     pub window_height: i32,

@@ -2,7 +2,7 @@ use super::RenderSystem;
 use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
 
-/// Renders the current FPS in the top right corner
+/// Renders the current FPS in the top right corner.
 pub struct RenderFpsSystem;
 
 impl RenderSystem for RenderFpsSystem {

@@ -8,6 +8,8 @@ use resource::Resources;
 /// Unique identifier for entities within the ECS
 pub type EntityId = u64;
 
+/// Central container for all ECS elements including entities, components, and resources.
+/// Manages entity lifecycle and provides access to component and resource storage.
 pub struct World {
     entity_ids: Vec<EntityId>,
     next_entity_id: EntityId,

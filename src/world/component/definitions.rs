@@ -3,43 +3,47 @@ use raylib::prelude::*;
 
 /// Camera properties and behavior configuration.
 pub struct CameraComponent {
-    /// Entity that the camera should follow (if any)
+    /// Entity that the camera should follow (if any).
     pub following_entity: Option<EntityId>,
-    /// Camera offset from target position
+    /// Camera offset from target position in screen coordinates.
     pub offset: Vector2,
-    /// Camera rotation in degrees
+    /// Camera rotation in degrees, clockwise.
     pub rotation: f32,
-    /// Camera zoom level
+    /// Camera zoom level, where 1.0 is default view.
     pub zoom: f32,
 }
 
 /// Stores input control state for an entity.
 pub struct ControlComponent {
-    /// Current movement vector
-    pub movement: Vector2,
+    /// Current movement vector, normalized between -1 and 1 on each axis.
+    pub movement_direction: Vector2,
 }
 
-/// Identifies an entity as a player and stores player-specific data.
+/// Identifies an entity as a player.
+/// Contains properties that affect player behavior.
 pub struct PlayerComponent {
-    /// Movement speed in units per second
+    /// Movement speed in units per second.
     pub speed: f32,
 }
 
 /// Represents an entity's position in 2D space.
+/// Used as the primary source of truth for entity locations.
 pub struct PositionComponent {
     pub coords: Vector2,
 }
 
-/// Tracks the game score
+/// Tracks the game score.
+/// Usually attached to a single entity that manages scoring.
 pub struct ScoreComponent {
-    /// Current score value
+    /// Current score value.
     pub value: i32,
 }
 
 /// Visual representation properties for an entity.
+/// Defines how an entity should be rendered.
 pub struct VisualComponent {
-    /// Color used for rendering
+    /// Color used for rendering the entity.
     pub color: Color,
-    /// Size of the entity's visual representation
+    /// Size of the entity's visual representation in pixels.
     pub size: f32,
 }

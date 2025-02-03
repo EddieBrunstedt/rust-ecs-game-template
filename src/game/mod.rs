@@ -16,10 +16,10 @@ pub struct Game {
 }
 
 /// Represents the different states the game can be in.
+/// Controls which update and render systems are active.
 #[allow(dead_code)]
 pub enum GameState {
     GameOver,
-    Loading,
     MainMenu,
     Paused,
     Playing,
@@ -41,10 +41,9 @@ impl GameBuilder {
     }
 
     fn setup_resources(&mut self) {
-        self.world.resources.insert_game_time(GameTime {
-            total: 0.0,
-            delta: 0.0,
-        });
+        self.world
+            .resources
+            .insert_game_time(GameTime { total: 0.0 });
     }
 
     fn setup_player(&mut self) -> EntityId {
@@ -67,7 +66,7 @@ impl GameBuilder {
         self.world.components.add_controls(
             player,
             ControlComponent {
-                movement: Vector2::zero(),
+                movement_direction: Vector2::zero(),
             },
         );
 
@@ -179,21 +178,20 @@ impl Game {
         match self.state {
             GameState::Playing => self.handle_playing_state(),
             GameState::GameOver => todo!(),
-            GameState::Loading => todo!(),
             GameState::MainMenu => todo!(),
             GameState::Paused => todo!(),
         }
     }
 
     fn handle_playing_state(&mut self) {
-        // Update Systems
+        // Update Systems:
         UpdateTimeSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         HandleInputSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle, &self.config);
         CameraFollowSystem::run(&mut self.world, &self.raylib_handle, &self.config);
 
-        // Render Systems
+        // Render Systems:
         let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
         ClearScreenSystem::run(&mut self.world, &mut draw_handle, &self.config);
         RenderVisualsSystem::run(&mut self.world, &mut draw_handle, &self.config);
