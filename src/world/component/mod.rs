@@ -1,7 +1,7 @@
 mod definitions;
 mod macros;
 
-use super::EntityId;
+use super::GenerationalId;
 pub use definitions::*;
 use std::collections::HashMap;
 
@@ -20,17 +20,17 @@ impl<T> ComponentMap<T> {
     }
 
     /// Retrieves a reference to an entity's component if it exists.
-    fn get(&self, entity: EntityId) -> Option<&T> {
+    fn get(&self, entity: GenerationalId) -> Option<&T> {
         self.entries.get(&entity)
     }
 
     /// Retrieves a mutable reference to an entity's component if it exists.
-    fn get_mut(&mut self, entity: EntityId) -> Option<&mut T> {
+    fn get_mut(&mut self, entity: GenerationalId) -> Option<&mut T> {
         self.entries.get_mut(&entity)
     }
 
     /// Associates a component with an entity.
-    fn insert(&mut self, entity: EntityId, component: T) {
+    fn insert(&mut self, entity: GenerationalId, component: T) {
         self.entries.insert(entity, component);
     }
 }
@@ -38,11 +38,11 @@ impl<T> ComponentMap<T> {
 /// Defines the interface for adding components to entities.
 /// Implemented automatically by the component related macros.
 pub trait ComponentStorage<T> {
-    fn add_component(&mut self, entity: EntityId, component: T);
+    fn add_component(&mut self, entity: GenerationalId, component: T);
 }
 
 /// Generic storage container for component data, mapping entities to their components.
 /// Provides basic CRUD operations for component management.
 struct ComponentMap<T> {
-    entries: HashMap<EntityId, T>,
+    entries: HashMap<GenerationalId, T>,
 }

@@ -2,7 +2,7 @@
 
 use crate::{
     config::GameConfig,
-    world::{component::*, resource::*, system::*, EntityId, World},
+    world::{component::*, resource::*, system::*, GenerationalId, World},
 };
 use raylib::prelude::*;
 
@@ -36,7 +36,7 @@ impl GameBuilder {
             .insert_game_time(GameTime { total: 0.0 });
     }
 
-    fn setup_player(&mut self) -> EntityId {
+    fn setup_player(&mut self) -> GenerationalId {
         let player = self
             .world
             .build_entity()
@@ -58,7 +58,7 @@ impl GameBuilder {
         player
     }
 
-    fn setup_camera(&mut self, following_entity: EntityId) {
+    fn setup_camera(&mut self, following_entity: GenerationalId) {
         self.world
             .build_entity()
             .with(CameraComponent {

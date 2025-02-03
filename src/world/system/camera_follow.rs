@@ -8,13 +8,12 @@ pub struct CameraFollowSystem;
 impl UpdateSystem for CameraFollowSystem {
     fn run(world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
         let updates: Vec<_> = world
-            .entity_ids
-            .iter()
+            .iter_entities()
             .filter_map(|entity| {
-                let camera = world.components.camera(*entity)?;
+                let camera = world.components.camera(entity)?;
                 let target_entity = camera.following_entity?;
                 let target_position = world.components.expect_position(target_entity);
-                Some((*entity, target_position.coords))
+                Some((entity, target_position.coords))
             })
             .collect();
 

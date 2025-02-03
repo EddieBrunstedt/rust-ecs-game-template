@@ -8,9 +8,8 @@ pub struct RenderScoreSystem;
 impl RenderSystem for RenderScoreSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle, config: &GameConfig) {
         if let Some(score) = world
-            .entity_ids
-            .iter()
-            .find_map(|e| world.components.score(*e))
+            .iter_entities()
+            .find_map(|e| world.components.score(e))
         {
             draw_handle.draw_text(
                 &format!("Score: {}", score.value),
