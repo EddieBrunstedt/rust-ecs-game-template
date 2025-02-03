@@ -1,5 +1,16 @@
-use crate::world::EntityId;
+use crate::world::component::ComponentMap;
+use crate::world::{ComponentStorage, Components, EntityId};
+use crate::{define_component_storages, define_components, impl_component_storage};
 use raylib::prelude::*;
+
+define_components! {
+    (camera, CameraComponent),
+    (controls, ControlsComponent),
+    (player, PlayerComponent),
+    (position, PositionComponent),
+    (score, ScoreComponent),
+    (visual, VisualComponent),
+}
 
 /// Camera properties and behavior configuration.
 pub struct CameraComponent {
@@ -14,7 +25,7 @@ pub struct CameraComponent {
 }
 
 /// Stores input control state for an entity.
-pub struct ControlComponent {
+pub struct ControlsComponent {
     /// Current movement vector, normalized between -1 and 1 on each axis.
     pub movement_direction: Vector2,
 }
