@@ -15,16 +15,6 @@ pub struct Game {
     world: World,
 }
 
-/// Represents the different states the game can be in.
-/// Controls which update and render systems are active.
-#[allow(dead_code)]
-pub enum GameState {
-    GameOver,
-    MainMenu,
-    Paused,
-    Playing,
-}
-
 /// Builder pattern implementation for game initialization.
 /// Handles the setup of core game systems and entities.
 pub struct GameBuilder {
@@ -47,62 +37,42 @@ impl GameBuilder {
     }
 
     fn setup_player(&mut self) -> EntityId {
-        let player = self.world.create_entity();
-
-        self.world.components.add_position(
-            player,
-            PositionComponent {
-                coords: Vector2::zero(),
-            },
-        );
-
-        self.world.components.add_player(
-            player,
-            PlayerComponent {
+        let player = self
+            .world
+            .build_entity()
+            .with(PlayerComponent {
                 speed: self.config.player_speed,
-            },
-        );
-
-        self.world.components.add_controls(
-            player,
-            ControlComponent {
+            })
+            .with(PositionComponent {
+                coords: Vector2::zero(),
+            })
+            .with(ControlsComponent {
                 movement_direction: Vector2::zero(),
-            },
-        );
-
-        self.world.components.add_visual(
-            player,
-            VisualComponent {
-                color: Color::RED,
+            })
+            .with(VisualComponent {
+                color: self.config.player_color,
                 size: self.config.player_size,
-            },
-        );
+            })
+            .id();
 
         player
     }
 
     fn setup_camera(&mut self, following_entity: EntityId) {
-        let camera = self.world.create_entity();
-
-        self.world.components.add_position(
-            camera,
-            PositionComponent {
-                coords: Vector2::zero(),
-            },
-        );
-
-        self.world.components.add_camera(
-            camera,
-            CameraComponent {
+        self.world
+            .build_entity()
+            .with(CameraComponent {
                 offset: Vector2::new(
                     self.config.window_width as f32 / 2.,
                     self.config.window_height as f32 / 2.,
                 ),
-                rotation: 0.0,
+                rotation: self.config.camera_rotation,
                 zoom: self.config.camera_zoom,
                 following_entity: Some(following_entity),
-            },
-        );
+            })
+            .with(PositionComponent {
+                coords: Vector2::zero(),
+            });
     }
 
     fn setup_background(&mut self) {
@@ -118,31 +88,20 @@ impl GameBuilder {
             let x = angle.cos() * radius;
             let y = angle.sin() * radius;
 
-            let dot = self.world.create_entity();
-
-            self.world.components.add_position(
-                dot,
-                PositionComponent {
+            self.world
+                .build_entity()
+                .with(PositionComponent {
                     coords: Vector2::new(x, y),
-                },
-            );
-
-            self.world.components.add_visual(
-                dot,
-                VisualComponent {
+                })
+                .with(VisualComponent {
                     color: Color::GRAY,
                     size: self.config.background_dot_size,
-                },
-            );
+                });
         }
     }
 
     fn setup_score(&mut self) {
-        let score_entity = self.world.create_entity();
-
-        self.world
-            .components
-            .add_score(score_entity, ScoreComponent { value: 0 });
+        self.world.build_entity().with(ScoreComponent { value: 0 });
     }
 
     pub fn build(mut self) -> Game {
@@ -199,4 +158,14 @@ impl Game {
         RenderGameTimeSystem::run(&mut self.world, &mut draw_handle, &self.config);
         RenderFpsSystem::run(&mut self.world, &mut draw_handle, &self.config);
     }
+}
+
+/// Represents the different states the game can be in.
+/// Controls which update and render systems are active.
+#[allow(dead_code)]
+enum GameState {
+    GameOver,
+    MainMenu,
+    Paused,
+    Playing,
 }

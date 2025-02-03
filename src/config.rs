@@ -11,9 +11,12 @@ pub struct GameConfig {
     pub background_color: Color,
 
     pub camera_zoom: f32,
+    pub camera_rotation: f32,
 
     /// Size of the player's visual representation in pixels
     pub player_size: f32,
+    /// Color of the player's visual representation
+    pub player_color: Color,
     /// Player movement speed in units per second
     pub player_speed: f32,
 
@@ -51,8 +54,10 @@ impl Default for GameConfig {
             background_color: Color::BLACK,
 
             camera_zoom: 1.0,
+            camera_rotation: 0.0,
 
             player_size: 8.,
+            player_color: Color::RED,
             player_speed: 250.,
 
             key_move_right: KeyboardKey::KEY_RIGHT,

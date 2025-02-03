@@ -27,7 +27,7 @@ flowchart TB
             C1[Position 1]
             C2[Sprite 1]
             C3[Position 2]
-            C4[Velocity]
+            C4[Velocity 1]
         end
 
         R[Resources]
