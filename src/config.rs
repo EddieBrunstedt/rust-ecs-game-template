@@ -56,7 +56,7 @@ impl Default for GameConfig {
             camera_zoom: 1.0,
             camera_rotation: 0.0,
 
-            player_size: 8.,
+            player_size: 20.,
             player_color: Color::RED,
             player_speed: 250.,
 
