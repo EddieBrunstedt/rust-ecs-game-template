@@ -38,7 +38,6 @@ pub struct World {
 }
 
 impl World {
-    // TODO: Add documentation
     pub fn new() -> Self {
         Self {
             entity_count: 0,
@@ -49,7 +48,6 @@ impl World {
         }
     }
 
-    // TODO: Add documentation
     pub fn remove_entity(&mut self, entity: GenerationalId) {
         // Verify the generation matches before removal
         if let Some(current_gen) = self.generations.get(entity.index as usize) {
@@ -102,7 +100,7 @@ impl World {
     pub fn is_entity_alive(&self, entity: GenerationalId) -> bool {
         self.generations
             .get(entity.index as usize)
-            .map_or(false, |&current_gen| current_gen == entity.generation)
+            .is_some_and(|&current_gen| current_gen == entity.generation)
     }
 }
 
