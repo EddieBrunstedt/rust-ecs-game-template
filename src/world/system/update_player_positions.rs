@@ -19,7 +19,9 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
                 let player = world.components.player(*entity)?;
                 let control = world.components.expect_controls(*entity);
                 let position = world.components.expect_position(*entity);
-                let frame_movement = control.movement.scale_by(player.speed * delta_time);
+                let frame_movement = control
+                    .movement_direction
+                    .scale_by(player.speed * delta_time);
                 let new_position = position.coords + frame_movement;
                 Some((*entity, new_position))
             })

@@ -2,7 +2,7 @@ use super::RenderSystem;
 use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
 
-/// Renders the score on screen
+/// Renders the score on screen.
 pub struct RenderScoreSystem;
 
 impl RenderSystem for RenderScoreSystem {

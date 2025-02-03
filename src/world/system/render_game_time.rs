@@ -2,7 +2,7 @@ use super::RenderSystem;
 use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
 
-/// Renders the game time on screen
+/// Renders the game time on screen.
 pub struct RenderGameTimeSystem;
 
 impl RenderSystem for RenderGameTimeSystem {

@@ -34,7 +34,11 @@ impl UpdateSystem for HandleInputSystem {
             } else {
                 movement
             };
-            world.components.expect_controls_mut(entity).movement = movement;
+
+            world
+                .components
+                .expect_controls_mut(entity)
+                .movement_direction = movement;
         }
     }
 }
