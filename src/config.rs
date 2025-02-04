@@ -43,7 +43,7 @@ pub struct GameConfig {
     pub fps_padding_top: i32,
     pub fps_padding_right: i32,
 
-    pub points_per_collision: i32,
+    pub points_per_collision: usize,
 }
 
 impl Default for GameConfig {

@@ -47,7 +47,7 @@ pub struct PositionComponent {
 /// Usually attached to a single entity that manages scoring.
 pub struct ScoreComponent {
     /// Current score value.
-    pub value: i32,
+    pub value: usize,
 }
 
 /// Visual representation properties for an entity.

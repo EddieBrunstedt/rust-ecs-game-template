@@ -9,9 +9,9 @@ use std::fmt;
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Entity {
     /// Index into the entity pool
-    pub index: u32,
+    pub index: usize,
     /// Generation counter to prevent ABA problems
-    pub generation: u32,
+    pub generation: usize,
 }
 
 impl fmt::Display for Entity {
