@@ -1,7 +1,7 @@
 use super::UpdateSystem;
 use crate::{
     config::GameConfig,
-    world::{GenerationalId, World},
+    world::{Entity, World},
 };
 use raylib::prelude::*;
 
@@ -10,7 +10,7 @@ pub struct HandleInputSystem;
 
 impl UpdateSystem for HandleInputSystem {
     fn run(world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig) {
-        let control_updates: Vec<(GenerationalId, Vector2)> = world
+        let control_updates: Vec<(Entity, Vector2)> = world
             .iter_entities()
             .filter_map(|entity| {
                 world.components.player(entity)?;

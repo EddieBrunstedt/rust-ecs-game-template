@@ -37,6 +37,7 @@ impl UpdateSystem for CollisionDetectionSystem {
             })
             .collect();
 
+        // TODO: Maybe change collision count to usize?
         let collision_count = (entities_to_remove.len() as i32) * config.points_per_collision;
 
         if collision_count > 0 {

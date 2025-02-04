@@ -1,7 +1,7 @@
 use super::UpdateSystem;
 use crate::{
     config::GameConfig,
-    world::{GenerationalId, World},
+    world::{Entity, World},
 };
 use raylib::prelude::*;
 
@@ -13,7 +13,7 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
         let delta_time = raylib_handle.get_frame_time();
 
         // Collect all active entities that need position updates
-        let updates: Vec<(GenerationalId, Vector2)> = world
+        let updates: Vec<(Entity, Vector2)> = world
             .iter_entities()
             .filter_map(|entity| {
                 let player = world.components.player(entity)?;

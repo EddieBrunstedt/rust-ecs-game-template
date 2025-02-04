@@ -3,6 +3,7 @@
 mod config;
 mod game;
 mod world;
+
 use game::GameBuilder;
 
 fn main() {

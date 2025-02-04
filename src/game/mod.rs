@@ -1,9 +1,6 @@
 //! Core game loop and state management.
 
-use crate::{
-    config::GameConfig,
-    world::{component::*, resource::*, system::*, GenerationalId, World},
-};
+use crate::{config::GameConfig, world::*};
 use raylib::prelude::*;
 
 /// Main game state container and controller.
@@ -36,7 +33,7 @@ impl GameBuilder {
             .insert_game_time(GameTime { total: 0.0 });
     }
 
-    fn setup_player(&mut self) -> GenerationalId {
+    fn setup_player(&mut self) -> Entity {
         let player = self
             .world
             .build_entity()
@@ -58,7 +55,7 @@ impl GameBuilder {
         player
     }
 
-    fn setup_camera(&mut self, following_entity: GenerationalId) {
+    fn setup_camera(&mut self, following_entity: Entity) {
         self.world
             .build_entity()
             .with(CameraComponent {
