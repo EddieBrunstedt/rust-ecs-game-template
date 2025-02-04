@@ -8,15 +8,13 @@ pub struct CollisionDetectionSystem;
 impl UpdateSystem for CollisionDetectionSystem {
     fn run(world: &mut World, _raylib_handle: &RaylibHandle, config: &GameConfig) {
         let score_entity = world
-            .entity_ids
-            .iter()
-            .find(|&&e| world.components.has_score(e));
+            .iter_entities()
+            .find(|&e| world.components.has_score(e));
 
         let player_data: Vec<_> = world
-            .entity_ids
-            .iter()
-            .filter(|&&e| world.components.has_player(e))
-            .filter_map(|&e| {
+            .iter_entities()
+            .filter(|&e| world.components.has_player(e))
+            .filter_map(|e| {
                 Some((
                     e,
                     world.components.expect_position(e).coords,
@@ -26,10 +24,9 @@ impl UpdateSystem for CollisionDetectionSystem {
             .collect();
 
         let entities_to_remove: Vec<_> = world
-            .entity_ids
-            .iter()
-            .filter(|&&e| !world.components.has_player(e))
-            .filter_map(|&e| {
+            .iter_entities()
+            .filter(|&e| !world.components.has_player(e))
+            .filter_map(|e| {
                 let pos = world.components.position(e)?;
                 let size = world.components.visual(e)?.size;
 
@@ -40,10 +37,10 @@ impl UpdateSystem for CollisionDetectionSystem {
             })
             .collect();
 
-        let collision_count = (entities_to_remove.len() as i32) * config.points_per_collision;
+        let collision_count = (entities_to_remove.len()) * config.points_per_collision;
 
         if collision_count > 0 {
-            if let Some(&e) = score_entity {
+            if let Some(e) = score_entity {
                 if let Some(score) = world.components.score_mut(e) {
                     score.value += collision_count;
                 }

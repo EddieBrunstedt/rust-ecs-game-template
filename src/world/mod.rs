@@ -1,40 +1,54 @@
-pub mod component;
-pub mod resource;
-pub mod system;
+mod component;
+mod entity;
+mod resource;
+mod system;
 
-use component::{ComponentStorage, Components};
-use resource::Resources;
+use std::collections::VecDeque;
 
-/// Unique identifier for entities within the ECS.
-pub type EntityId = u64;
+pub use component::*;
+pub use entity::*;
+pub use resource::*;
+pub use system::*;
+
+use crate::config::GameConfig;
 
 /// Central container for all ECS elements including entities, components, and resources.
 /// Manages entity lifecycle and provides access to component and resource storage.
 pub struct World {
     pub resources: Resources,
     pub components: Components,
-    entity_ids: Vec<EntityId>,
-    next_entity_id: EntityId,
+    // Stores active entity generations
+    entity_generations: Vec<usize>,
+    // Queue of freed indices for reuse
+    free_entity_indices: VecDeque<usize>,
+    // Count of all entities ever created (used for new indices)
+    entity_count: usize,
 }
 
 impl World {
-    // TODO: Add documentation
     pub fn new() -> Self {
+        Self::with_capacity(GameConfig::default().max_entities)
+    }
+
+    pub fn with_capacity(max_entities: usize) -> Self {
         Self {
-            entity_ids: Vec::new(),
-            next_entity_id: 0,
-            resources: Resources::new(),
+            entity_count: 0,
+            free_entity_indices: VecDeque::with_capacity(max_entities),
+            entity_generations: Vec::with_capacity(max_entities),
             components: Components::new(),
+            resources: Resources::new(),
         }
     }
 
-    // TODO: Add documentation
-    pub fn remove_entity(&mut self, entity: EntityId) {
-        if let Some(pos) = self.entity_ids.iter().position(|&id| id == entity) {
-            self.entity_ids.swap_remove(pos);
+    pub fn remove_entity(&mut self, entity: Entity) {
+        // Verify the generation matches before removal
+        if let Some(current_gen) = self.entity_generations.get(entity.index) {
+            if *current_gen == entity.generation {
+                self.entity_generations[entity.index] += 1;
+                self.free_entity_indices.push_back(entity.index);
+                self.components.remove_all_components_with_entity(entity);
+            }
         }
-
-        self.components.remove_all_components_with_entity(entity);
     }
 
     /// Start building an entity with a fluent interface
@@ -46,32 +60,41 @@ impl World {
         }
     }
 
-    fn create_entity(&mut self) -> EntityId {
-        let entity_id = self.next_entity_id;
-        self.entity_ids.push(entity_id);
-        self.next_entity_id += 1;
-        entity_id
-    }
-}
-
-/// Builder for fluent entity creation with components
-pub struct EntityBuilder<'a> {
-    world: &'a mut World,
-    entity: EntityId,
-}
-
-impl EntityBuilder<'_> {
-    /// Add a component to the entity being built
-    pub fn with<T>(self, component: T) -> Self
-    where
-        Components: ComponentStorage<T>,
-    {
-        self.world.components.add_component(self.entity, component);
-        self
+    /// Returns an iterator over all active entities
+    pub fn iter_entities(&self) -> impl Iterator<Item = Entity> + '_ {
+        self.entity_generations
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| !self.free_entity_indices.contains(index))
+            .map(|(index, gen)| Entity {
+                index,
+                generation: *gen,
+            })
     }
 
-    /// Get the EntityId of the built entity
-    pub fn id(&self) -> EntityId {
-        self.entity
+    fn create_entity(&mut self) -> Entity {
+        // Try to reuse an index from the free list
+        if let Some(index) = self.free_entity_indices.pop_front() {
+            let generation = self.entity_generations[index];
+            Entity { index, generation }
+        } else {
+            // Create a new entity index
+            let index = self.entity_count;
+            assert!(
+                index < GameConfig::default().max_entities,
+                "Maximum entity limit of {} reached. Cannot create more entities.",
+                GameConfig::default().max_entities
+            );
+            self.entity_count += 1;
+            let generation = 0;
+            self.entity_generations.push(generation);
+            Entity { index, generation }
+        }
+    }
+
+    pub fn is_entity_alive(&self, entity: Entity) -> bool {
+        self.entity_generations
+            .get(entity.index)
+            .is_some_and(|&current_gen| current_gen == entity.generation)
     }
 }

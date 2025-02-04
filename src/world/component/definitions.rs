@@ -1,5 +1,5 @@
 use crate::world::component::ComponentMap;
-use crate::world::{ComponentStorage, Components, EntityId};
+use crate::world::{ComponentStorage, Components, Entity};
 use crate::{define_component_storages, define_components, impl_component_storage};
 use raylib::prelude::*;
 
@@ -15,7 +15,7 @@ define_components! {
 /// Camera properties and behavior configuration.
 pub struct CameraComponent {
     /// Entity that the camera should follow (if any).
-    pub following_entity: Option<EntityId>,
+    pub following_entity: Option<Entity>,
     /// Camera offset from target position in screen coordinates.
     pub offset: Vector2,
     /// Camera rotation in degrees, clockwise.
@@ -47,7 +47,7 @@ pub struct PositionComponent {
 /// Usually attached to a single entity that manages scoring.
 pub struct ScoreComponent {
     /// Current score value.
-    pub value: i32,
+    pub value: usize,
 }
 
 /// Visual representation properties for an entity.

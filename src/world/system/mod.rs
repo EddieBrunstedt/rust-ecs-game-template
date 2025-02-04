@@ -25,13 +25,13 @@ pub use update_player_positions::UpdatePlayerPositionsSystem;
 pub use update_time::UpdateTimeSystem;
 
 /// Defines behavior for systems that render to the screen.
-/// Render systems are called each frame after update systems complete.
+/// Render systems are called each frame, commonly after update systems complete.
 pub trait RenderSystem {
     fn run(world: &mut World, draw_handle: &mut RaylibDrawHandle, config: &GameConfig);
 }
 
 /// Defines behavior for systems that update game state.
-/// Update systems are called each frame before rendering occurs.
+/// Update systems are called each frame, commonly before rendering occurs.
 pub trait UpdateSystem {
     fn run(world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig);
 }

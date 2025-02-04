@@ -8,6 +8,8 @@ pub struct GameConfig {
     pub window_height: i32,
     pub window_width: i32,
 
+    pub max_entities: usize,
+
     pub background_color: Color,
 
     pub camera_zoom: f32,
@@ -41,7 +43,7 @@ pub struct GameConfig {
     pub fps_padding_top: i32,
     pub fps_padding_right: i32,
 
-    pub points_per_collision: i32,
+    pub points_per_collision: usize,
 }
 
 impl Default for GameConfig {
@@ -51,12 +53,14 @@ impl Default for GameConfig {
             window_height: 480,
             window_width: 640,
 
+            max_entities: 1_000_000,
+
             background_color: Color::BLACK,
 
             camera_zoom: 1.0,
             camera_rotation: 0.0,
 
-            player_size: 8.,
+            player_size: 20.,
             player_color: Color::RED,
             player_speed: 250.,
 
