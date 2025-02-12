@@ -1,8 +1,13 @@
-use crate::{
-    config::GameConfig,
-    world::{system::*, World},
-};
+mod main_menu;
+mod paus;
+mod playing;
+
+use crate::{config::GameConfig, world::*};
 use raylib::prelude::*;
+
+pub use main_menu::MainMenuScene;
+pub use paus::PauseScene;
+pub use playing::PlayingScene;
 
 pub enum SceneTransition {
     /// Replace the current scene entirely, cleaning up all entities
@@ -14,7 +19,7 @@ pub enum SceneTransition {
 }
 
 pub trait Scene {
-    fn enter(&mut self, world: &mut World);
+    fn enter(&mut self, world: &mut World, config: &GameConfig);
     fn exit(&mut self, world: &mut World);
     fn update(
         &mut self,
@@ -30,14 +35,8 @@ pub trait Scene {
     );
 
     /// Whether this scene should render scenes below it
-    fn is_transparent(&self) -> bool {
-        false
-    }
+    fn is_transparent(&self) -> bool;
 }
-
-pub struct MainMenuScene;
-pub struct PlayingScene;
-pub struct PauseScene;
 
 // Enum to hold all possible scenes
 pub enum GameScene {
@@ -46,126 +45,12 @@ pub enum GameScene {
     Paused(PauseScene),
 }
 
-impl Scene for PlayingScene {
-    fn enter(&mut self, _world: &mut World) {
-        // Setup pause-specific UI entities only
-    }
-
-    fn exit(&mut self, _world: &mut World) {
-        // Cleanup pause-specific UI entities only
-    }
-
-    fn is_transparent(&self) -> bool {
-        true // Allow the game scene to render underneath
-    }
-
-    fn update(
-        &mut self,
-        world: &mut World,
-        raylib_handle: &RaylibHandle,
-        config: &GameConfig,
-    ) -> Option<SceneTransition> {
-        UpdateTimeSystem::run(world, raylib_handle, config);
-        HandleInputSystem::run(world, raylib_handle, config);
-        UpdatePlayerPositionsSystem::run(world, raylib_handle, config);
-        CollisionDetectionSystem::run(world, raylib_handle, config);
-        CameraFollowSystem::run(world, raylib_handle, config);
-
-        None
-    }
-
-    fn render(
-        &mut self,
-        world: &mut World,
-        draw_handle: &mut RaylibDrawHandle,
-        config: &GameConfig,
-    ) {
-        ClearScreenSystem::run(world, draw_handle, config);
-        RenderVisualsSystem::run(world, draw_handle, config);
-        RenderScoreSystem::run(world, draw_handle, config);
-        RenderGameTimeSystem::run(world, draw_handle, config);
-        RenderFpsSystem::run(world, draw_handle, config);
-    }
-}
-
-impl Scene for MainMenuScene {
-    fn enter(&mut self, _world: &mut World) {
-        // Setup pause-specific UI entities only
-    }
-
-    fn exit(&mut self, _world: &mut World) {
-        // Cleanup pause-specific UI entities only
-    }
-
-    fn is_transparent(&self) -> bool {
-        true // Allow the game scene to render underneath
-    }
-
-    fn update(
-        &mut self,
-        _world: &mut World,
-        raylib_handle: &RaylibHandle,
-        _config: &GameConfig,
-    ) -> Option<SceneTransition> {
-        if raylib_handle.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
-            Some(SceneTransition::Pop) // Return to previous scene
-        } else {
-            None
-        }
-    }
-
-    fn render(
-        &mut self,
-        _world: &mut World,
-        _draw_handle: &mut RaylibDrawHandle,
-        _config: &GameConfig,
-    ) {
-        // Run Render Systems
-    }
-}
-
-impl Scene for PauseScene {
-    fn enter(&mut self, _world: &mut World) {
-        // Setup pause-specific UI entities only
-    }
-
-    fn exit(&mut self, _world: &mut World) {
-        // Cleanup pause-specific UI entities only
-    }
-
-    fn is_transparent(&self) -> bool {
-        true // Allow the game scene to render underneath
-    }
-
-    fn update(
-        &mut self,
-        _world: &mut World,
-        raylib_handle: &RaylibHandle,
-        _config: &GameConfig,
-    ) -> Option<SceneTransition> {
-        if raylib_handle.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
-            Some(SceneTransition::Pop)
-        } else {
-            None
-        }
-    }
-
-    fn render(
-        &mut self,
-        _world: &mut World,
-        _draw_handle: &mut RaylibDrawHandle,
-        _config: &GameConfig,
-    ) {
-        // Run Render Systems
-    }
-}
-
 impl GameScene {
-    pub fn enter(&mut self, world: &mut World) {
+    pub fn enter(&mut self, world: &mut World, config: &GameConfig) {
         match self {
-            GameScene::MainMenu(scene) => scene.enter(world),
-            GameScene::Playing(scene) => scene.enter(world),
-            GameScene::Paused(scene) => scene.enter(world),
+            GameScene::MainMenu(scene) => scene.enter(world, config),
+            GameScene::Playing(scene) => scene.enter(world, config),
+            GameScene::Paused(scene) => scene.enter(world, config),
         }
     }
 

@@ -7,6 +7,6 @@ mod world;
 use game::GameBuilder;
 
 fn main() {
-    let mut game = GameBuilder::new().build();
+    let mut game = GameBuilder::new().enter();
     game.run();
 }

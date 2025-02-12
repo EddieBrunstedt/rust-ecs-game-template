@@ -27,99 +27,23 @@ impl GameBuilder {
         }
     }
 
-    fn setup_resources(&mut self) {
-        self.world
-            .resources
-            .insert_game_time(GameTime { total: 0.0 });
-    }
-
-    fn setup_player(&mut self) -> Entity {
-        let player = self
-            .world
-            .build_entity()
-            .with(PlayerComponent {
-                speed: self.config.player_speed,
-            })
-            .with(PositionComponent {
-                coords: Vector2::zero(),
-            })
-            .with(ControlsComponent {
-                movement_direction: Vector2::zero(),
-            })
-            .with(VisualComponent {
-                color: self.config.player_color,
-                size: self.config.player_size,
-            })
-            .id();
-
-        player
-    }
-
-    fn setup_camera(&mut self, following_entity: Entity) {
-        self.world
-            .build_entity()
-            .with(CameraComponent {
-                offset: Vector2::new(
-                    self.config.window_width as f32 / 2.,
-                    self.config.window_height as f32 / 2.,
-                ),
-                rotation: self.config.camera_rotation,
-                zoom: self.config.camera_zoom,
-                following_entity: Some(following_entity),
-            })
-            .with(PositionComponent {
-                coords: Vector2::zero(),
-            });
-    }
-
-    fn setup_background(&mut self) {
-        let points = self.config.background_dots_count;
-
-        for i in 0..points {
-            let angle = (i as f32 / points as f32)
-                * self.config.background_spiral_spins
-                * std::f32::consts::TAU;
-            let radius = self.config.background_spiral_min_radius
-                + (self.config.background_spiral_radius_step * angle / std::f32::consts::TAU);
-
-            let x = angle.cos() * radius;
-            let y = angle.sin() * radius;
-
-            self.world
-                .build_entity()
-                .with(PositionComponent {
-                    coords: Vector2::new(x, y),
-                })
-                .with(VisualComponent {
-                    color: Color::GRAY,
-                    size: self.config.background_dot_size,
-                });
-        }
-    }
-
-    fn setup_score(&mut self) {
-        self.world.build_entity().with(ScoreComponent { value: 0 });
-    }
-
-    pub fn build(mut self) -> Game {
-        let player = self.setup_player();
-        self.setup_camera(player);
-        self.setup_resources();
-        self.setup_background();
-        self.setup_score();
-
+    pub fn enter(self) -> Game {
         let (raylib_handle, raylib_thread) = raylib::init()
             .size(self.config.window_width, self.config.window_height)
             .title(self.config.window_title)
             .build();
 
-        Game {
+        let mut game = Game {
             config: self.config,
             raylib_handle,
             raylib_thread,
-            scene_stack: vec![GameScene::Playing(PlayingScene)],
+            scene_stack: vec![],
             world: self.world,
-        }
+        };
+
+        game.handle_scene_transition(SceneTransition::Push(GameScene::Playing(PlayingScene)));
+
+        game
     }
 }
 
@@ -131,18 +55,24 @@ impl Game {
                     current_scene.exit(&mut self.world);
                 }
                 self.scene_stack.push(new_scene);
-                self.scene_stack.last_mut().unwrap().enter(&mut self.world);
+                self.scene_stack
+                    .last_mut()
+                    .unwrap()
+                    .enter(&mut self.world, &self.config);
             }
             SceneTransition::Push(new_scene) => {
                 self.scene_stack.push(new_scene);
-                self.scene_stack.last_mut().unwrap().enter(&mut self.world);
+                self.scene_stack
+                    .last_mut()
+                    .unwrap()
+                    .enter(&mut self.world, &self.config);
             }
             SceneTransition::Pop => {
                 if let Some(mut current_scene) = self.scene_stack.pop() {
                     current_scene.exit(&mut self.world);
                 }
                 if let Some(previous_scene) = self.scene_stack.last_mut() {
-                    previous_scene.enter(&mut self.world);
+                    previous_scene.enter(&mut self.world, &self.config);
                 }
             }
         }
