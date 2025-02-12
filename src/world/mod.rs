@@ -10,6 +10,7 @@ pub use component::*;
 pub use entity::*;
 pub use resource::*;
 pub use scene::*;
+pub use system::*;
 
 use crate::config::GameConfig;
 

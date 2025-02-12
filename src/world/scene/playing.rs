@@ -51,7 +51,6 @@ impl Scene for PlayingScene {
         draw_handle: &mut RaylibDrawHandle,
         config: &GameConfig,
     ) {
-        ClearScreenSystem::run(world, draw_handle, config);
         RenderVisualsSystem::run(world, draw_handle, config);
         RenderScoreSystem::run(world, draw_handle, config);
         RenderGameTimeSystem::run(world, draw_handle, config);

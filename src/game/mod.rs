@@ -79,6 +79,7 @@ impl Game {
 
     pub fn run(&mut self) {
         while !self.raylib_handle.window_should_close() {
+            // Handle scene updates
             if let Some(current_scene) = self.scene_stack.last_mut() {
                 if let Some(transition) =
                     current_scene.update(&mut self.world, &self.raylib_handle, &self.config)
@@ -88,9 +89,32 @@ impl Game {
                 }
             }
 
+            // Begin drawing
             let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
-            for scene in self.scene_stack.iter_mut() {
-                scene.render(&mut self.world, &mut draw_handle, &self.config);
+            crate::world::ClearScreenSystem::run(&mut self.world, &mut draw_handle, &self.config);
+
+            // Find the topmost non-transparent scene
+            let first_non_transparent = self
+                .scene_stack
+                .iter()
+                .rev()
+                .position(|scene| !scene.is_transparent())
+                .map(|pos| self.scene_stack.len() - 1 - pos);
+
+            // Determine which scenes to render
+            match first_non_transparent {
+                // If we found a non-transparent scene, render it and any transparent scenes above it
+                Some(base_index) => {
+                    for scene in self.scene_stack[base_index..].iter_mut() {
+                        scene.render(&mut self.world, &mut draw_handle, &self.config);
+                    }
+                }
+                // If all scenes are transparent, render all scenes
+                None => {
+                    for scene in self.scene_stack.iter_mut() {
+                        scene.render(&mut self.world, &mut draw_handle, &self.config);
+                    }
+                }
             }
         }
     }
