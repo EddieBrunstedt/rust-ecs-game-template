@@ -4,17 +4,35 @@ use crate::{
 };
 use raylib::prelude::*;
 
-#[allow(dead_code)]
+pub enum SceneTransition {
+    /// Replace the current scene entirely, cleaning up all entities
+    Replace(GameScene),
+    /// Push a new scene on top, preserving the current scene underneath
+    Push(GameScene),
+    /// Pop the current scene, returning to the previous scene
+    Pop,
+}
+
 pub trait Scene {
     fn enter(&mut self, world: &mut World);
     fn exit(&mut self, world: &mut World);
-    fn update(&mut self, world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig);
+    fn update(
+        &mut self,
+        world: &mut World,
+        raylib_handle: &RaylibHandle,
+        config: &GameConfig,
+    ) -> Option<SceneTransition>;
     fn render(
         &mut self,
         world: &mut World,
         draw_handle: &mut RaylibDrawHandle,
         config: &GameConfig,
     );
+
+    /// Whether this scene should render scenes below it
+    fn is_transparent(&self) -> bool {
+        false
+    }
 }
 
 pub struct MainMenuScene;
@@ -22,7 +40,6 @@ pub struct PlayingScene;
 pub struct PauseScene;
 
 // Enum to hold all possible scenes
-#[allow(dead_code)]
 pub enum GameScene {
     MainMenu(MainMenuScene),
     Playing(PlayingScene),
@@ -31,19 +48,30 @@ pub enum GameScene {
 
 impl Scene for PlayingScene {
     fn enter(&mut self, _world: &mut World) {
-        // Setup scene-specific entities
+        // Setup pause-specific UI entities only
     }
 
     fn exit(&mut self, _world: &mut World) {
-        // Cleanup scene-specific entities
+        // Cleanup pause-specific UI entities only
     }
 
-    fn update(&mut self, world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig) {
+    fn is_transparent(&self) -> bool {
+        true // Allow the game scene to render underneath
+    }
+
+    fn update(
+        &mut self,
+        world: &mut World,
+        raylib_handle: &RaylibHandle,
+        config: &GameConfig,
+    ) -> Option<SceneTransition> {
         UpdateTimeSystem::run(world, raylib_handle, config);
         HandleInputSystem::run(world, raylib_handle, config);
         UpdatePlayerPositionsSystem::run(world, raylib_handle, config);
         CollisionDetectionSystem::run(world, raylib_handle, config);
         CameraFollowSystem::run(world, raylib_handle, config);
+
+        None
     }
 
     fn render(
@@ -62,15 +90,28 @@ impl Scene for PlayingScene {
 
 impl Scene for MainMenuScene {
     fn enter(&mut self, _world: &mut World) {
-        // Setup scene-specific entities
+        // Setup pause-specific UI entities only
     }
 
     fn exit(&mut self, _world: &mut World) {
-        // Cleanup scene-specific entities
+        // Cleanup pause-specific UI entities only
     }
 
-    fn update(&mut self, _world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
-        // Run Update Systems
+    fn is_transparent(&self) -> bool {
+        true // Allow the game scene to render underneath
+    }
+
+    fn update(
+        &mut self,
+        _world: &mut World,
+        raylib_handle: &RaylibHandle,
+        _config: &GameConfig,
+    ) -> Option<SceneTransition> {
+        if raylib_handle.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+            Some(SceneTransition::Pop) // Return to previous scene
+        } else {
+            None
+        }
     }
 
     fn render(
@@ -85,15 +126,28 @@ impl Scene for MainMenuScene {
 
 impl Scene for PauseScene {
     fn enter(&mut self, _world: &mut World) {
-        // Setup scene-specific entities
+        // Setup pause-specific UI entities only
     }
 
     fn exit(&mut self, _world: &mut World) {
-        // Cleanup scene-specific entities
+        // Cleanup pause-specific UI entities only
     }
 
-    fn update(&mut self, _world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
-        // Run Update Systems
+    fn is_transparent(&self) -> bool {
+        true // Allow the game scene to render underneath
+    }
+
+    fn update(
+        &mut self,
+        _world: &mut World,
+        raylib_handle: &RaylibHandle,
+        _config: &GameConfig,
+    ) -> Option<SceneTransition> {
+        if raylib_handle.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+            Some(SceneTransition::Pop)
+        } else {
+            None
+        }
     }
 
     fn render(
@@ -105,18 +159,6 @@ impl Scene for PauseScene {
         // Run Render Systems
     }
 }
-
-// impl MainMenuScene {
-//     pub fn new() -> Self {
-//         Self {}
-//     }
-// }
-//
-// impl PauseScene {
-//     pub fn new() -> Self {
-//         Self {}
-//     }
-// }
 
 impl GameScene {
     pub fn enter(&mut self, world: &mut World) {
@@ -135,7 +177,12 @@ impl GameScene {
         }
     }
 
-    pub fn update(&mut self, world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig) {
+    pub fn update(
+        &mut self,
+        world: &mut World,
+        raylib_handle: &RaylibHandle,
+        config: &GameConfig,
+    ) -> Option<SceneTransition> {
         match self {
             GameScene::MainMenu(scene) => scene.update(world, raylib_handle, config),
             GameScene::Playing(scene) => scene.update(world, raylib_handle, config),
@@ -153,6 +200,14 @@ impl GameScene {
             GameScene::MainMenu(scene) => scene.render(world, draw_handle, config),
             GameScene::Playing(scene) => scene.render(world, draw_handle, config),
             GameScene::Paused(scene) => scene.render(world, draw_handle, config),
+        }
+    }
+
+    pub fn is_transparent(&self) -> bool {
+        match self {
+            GameScene::MainMenu(scene) => scene.is_transparent(),
+            GameScene::Playing(scene) => scene.is_transparent(),
+            GameScene::Paused(scene) => scene.is_transparent(),
         }
     }
 }

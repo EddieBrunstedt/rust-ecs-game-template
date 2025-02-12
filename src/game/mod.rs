@@ -8,9 +8,8 @@ pub struct Game {
     config: GameConfig,
     raylib_handle: RaylibHandle,
     raylib_thread: RaylibThread,
-    // state: GameState,
+    scene_stack: Vec<GameScene>,
     world: World,
-    current_scene: GameScene,
 }
 
 /// Builder pattern implementation for game initialization.
@@ -118,41 +117,57 @@ impl GameBuilder {
             config: self.config,
             raylib_handle,
             raylib_thread,
-            current_scene: GameScene::Playing(PlayingScene),
+            scene_stack: vec![GameScene::Playing(PlayingScene)],
             world: self.world,
         }
     }
 }
 
 impl Game {
-    pub fn run(&mut self) {
-        // while !self.raylib_handle.window_should_close() {
-        //     self.update_current_state();
-        // }
-
-        while !self.raylib_handle.window_should_close() {
-            self.current_scene
-                .update(&mut self.world, &self.raylib_handle, &self.config);
-
-            let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
-            self.current_scene
-                .render(&mut self.world, &mut draw_handle, &self.config);
+    pub fn handle_scene_transition(&mut self, transition: SceneTransition) {
+        match transition {
+            SceneTransition::Replace(new_scene) => {
+                if let Some(mut current_scene) = self.scene_stack.pop() {
+                    current_scene.exit(&mut self.world);
+                }
+                self.scene_stack.push(new_scene);
+                self.scene_stack.last_mut().unwrap().enter(&mut self.world);
+            }
+            SceneTransition::Push(new_scene) => {
+                self.scene_stack.push(new_scene);
+                self.scene_stack.last_mut().unwrap().enter(&mut self.world);
+            }
+            SceneTransition::Pop => {
+                if let Some(mut current_scene) = self.scene_stack.pop() {
+                    current_scene.exit(&mut self.world);
+                }
+                if let Some(previous_scene) = self.scene_stack.last_mut() {
+                    previous_scene.enter(&mut self.world);
+                }
+            }
         }
     }
 
-    pub fn change_scene(&mut self, new_scene: GameScene) {
-        self.current_scene.exit(&mut self.world);
-        self.current_scene = new_scene;
-        self.current_scene.enter(&mut self.world);
-    }
-}
+    pub fn run(&mut self) {
+        while !self.raylib_handle.window_should_close() {
+            // Update current scene
+            if let Some(current_scene) = self.scene_stack.last_mut() {
+                if let Some(transition) =
+                    current_scene.update(&mut self.world, &self.raylib_handle, &self.config)
+                {
+                    self.handle_scene_transition(transition);
+                    continue;
+                }
+            }
 
-/// Represents the different states the game can be in.
-/// Controls which update and render systems are active.
-#[allow(dead_code)]
-enum GameState {
-    GameOver,
-    MainMenu,
-    Paused,
-    Playing,
+            // Render scenes from bottom to top
+            let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
+            for scene in self.scene_stack.iter_mut() {
+                scene.render(&mut self.world, &mut draw_handle, &self.config);
+                if !scene.is_transparent() {
+                    break;
+                }
+            }
+        }
+    }
 }
