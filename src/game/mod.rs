@@ -8,8 +8,9 @@ pub struct Game {
     config: GameConfig,
     raylib_handle: RaylibHandle,
     raylib_thread: RaylibThread,
-    state: GameState,
+    // state: GameState,
     world: World,
+    current_scene: GameScene,
 }
 
 /// Builder pattern implementation for game initialization.
@@ -117,7 +118,7 @@ impl GameBuilder {
             config: self.config,
             raylib_handle,
             raylib_thread,
-            state: GameState::Playing,
+            current_scene: GameScene::Playing(PlayingScene),
             world: self.world,
         }
     }
@@ -125,35 +126,24 @@ impl GameBuilder {
 
 impl Game {
     pub fn run(&mut self) {
+        // while !self.raylib_handle.window_should_close() {
+        //     self.update_current_state();
+        // }
+
         while !self.raylib_handle.window_should_close() {
-            self.update_current_state();
+            self.current_scene
+                .update(&mut self.world, &self.raylib_handle, &self.config);
+
+            let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
+            self.current_scene
+                .render(&mut self.world, &mut draw_handle, &self.config);
         }
     }
 
-    fn update_current_state(&mut self) {
-        match self.state {
-            GameState::Playing => self.handle_playing_state(),
-            GameState::GameOver => todo!(),
-            GameState::MainMenu => todo!(),
-            GameState::Paused => todo!(),
-        }
-    }
-
-    fn handle_playing_state(&mut self) {
-        // Update Systems:
-        UpdateTimeSystem::run(&mut self.world, &self.raylib_handle, &self.config);
-        HandleInputSystem::run(&mut self.world, &self.raylib_handle, &self.config);
-        UpdatePlayerPositionsSystem::run(&mut self.world, &self.raylib_handle, &self.config);
-        CollisionDetectionSystem::run(&mut self.world, &self.raylib_handle, &self.config);
-        CameraFollowSystem::run(&mut self.world, &self.raylib_handle, &self.config);
-
-        // Render Systems:
-        let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
-        ClearScreenSystem::run(&mut self.world, &mut draw_handle, &self.config);
-        RenderVisualsSystem::run(&mut self.world, &mut draw_handle, &self.config);
-        RenderScoreSystem::run(&mut self.world, &mut draw_handle, &self.config);
-        RenderGameTimeSystem::run(&mut self.world, &mut draw_handle, &self.config);
-        RenderFpsSystem::run(&mut self.world, &mut draw_handle, &self.config);
+    pub fn change_scene(&mut self, new_scene: GameScene) {
+        self.current_scene.exit(&mut self.world);
+        self.current_scene = new_scene;
+        self.current_scene.enter(&mut self.world);
     }
 }
 

@@ -1,6 +1,7 @@
 mod component;
 mod entity;
 mod resource;
+mod scene;
 mod system;
 
 use std::collections::VecDeque;
@@ -8,7 +9,7 @@ use std::collections::VecDeque;
 pub use component::*;
 pub use entity::*;
 pub use resource::*;
-pub use system::*;
+pub use scene::*;
 
 use crate::config::GameConfig;
 
