@@ -9,6 +9,7 @@ define_components! {
     (player, PlayerComponent),
     (position, PositionComponent),
     (score, ScoreComponent),
+    (ui_visibility, UiVisibilityComponent),
     (visual, VisualComponent),
 }
 
@@ -48,6 +49,10 @@ pub struct PositionComponent {
 pub struct ScoreComponent {
     /// Current score value.
     pub value: usize,
+}
+
+pub struct UiVisibilityComponent {
+    pub fps_counter: bool,
 }
 
 /// Visual representation properties for an entity.

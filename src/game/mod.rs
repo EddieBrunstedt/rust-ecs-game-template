@@ -28,10 +28,12 @@ impl GameBuilder {
     }
 
     pub fn enter(self) -> Game {
-        let (raylib_handle, raylib_thread) = raylib::init()
+        let (mut raylib_handle, raylib_thread) = raylib::init()
             .size(self.config.window_width, self.config.window_height)
             .title(self.config.window_title)
             .build();
+
+        raylib_handle.set_exit_key(None);
 
         let mut game = Game {
             config: self.config,
@@ -71,16 +73,12 @@ impl Game {
                 if let Some(mut current_scene) = self.scene_stack.pop() {
                     current_scene.exit(&mut self.world);
                 }
-                if let Some(previous_scene) = self.scene_stack.last_mut() {
-                    previous_scene.enter(&mut self.world, &self.config);
-                }
             }
         }
     }
 
     pub fn run(&mut self) {
         while !self.raylib_handle.window_should_close() {
-            // Update current scene
             if let Some(current_scene) = self.scene_stack.last_mut() {
                 if let Some(transition) =
                     current_scene.update(&mut self.world, &self.raylib_handle, &self.config)
@@ -90,13 +88,9 @@ impl Game {
                 }
             }
 
-            // Render scenes from bottom to top
             let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
             for scene in self.scene_stack.iter_mut() {
                 scene.render(&mut self.world, &mut draw_handle, &self.config);
-                if !scene.is_transparent() {
-                    break;
-                }
             }
         }
     }

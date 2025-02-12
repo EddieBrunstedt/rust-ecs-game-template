@@ -9,6 +9,7 @@ pub use main_menu::MainMenuScene;
 pub use paus::PauseScene;
 pub use playing::PlayingScene;
 
+#[derive(Debug)]
 pub enum SceneTransition {
     /// Replace the current scene entirely, cleaning up all entities
     Replace(GameScene),
@@ -39,6 +40,7 @@ pub trait Scene {
 }
 
 // Enum to hold all possible scenes
+#[derive(Debug)]
 pub enum GameScene {
     MainMenu(MainMenuScene),
     Playing(PlayingScene),

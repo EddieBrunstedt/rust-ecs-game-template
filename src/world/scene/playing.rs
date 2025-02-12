@@ -5,6 +5,7 @@ use crate::{
 };
 use raylib::prelude::*;
 
+#[derive(Debug)]
 pub struct PlayingScene;
 
 impl Scene for PlayingScene {
@@ -14,6 +15,7 @@ impl Scene for PlayingScene {
         setup_resources(world);
         setup_background(world, config);
         setup_score(world);
+        setup_ui_state(world, config);
     }
 
     fn exit(&mut self, _world: &mut World) {
@@ -30,6 +32,10 @@ impl Scene for PlayingScene {
         raylib_handle: &RaylibHandle,
         config: &GameConfig,
     ) -> Option<SceneTransition> {
+        if raylib_handle.is_key_pressed(KeyboardKey::KEY_P) {
+            return Some(SceneTransition::Push(GameScene::Paused(PauseScene)));
+        }
+
         UpdateTimeSystem::run(world, raylib_handle, config);
         HandleInputSystem::run(world, raylib_handle, config);
         UpdatePlayerPositionsSystem::run(world, raylib_handle, config);
@@ -121,4 +127,10 @@ fn setup_background(world: &mut World, config: &GameConfig) {
 
 fn setup_score(world: &mut World) {
     world.build_entity().with(ScoreComponent { value: 0 });
+}
+
+fn setup_ui_state(world: &mut World, config: &GameConfig) {
+    world.build_entity().with(UiVisibilityComponent {
+        fps_counter: config.fps_initial_visibility,
+    });
 }

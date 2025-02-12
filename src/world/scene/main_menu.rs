@@ -2,6 +2,7 @@ use super::{Scene, SceneTransition};
 use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
 
+#[derive(Debug)]
 pub struct MainMenuScene;
 
 impl Scene for MainMenuScene {
