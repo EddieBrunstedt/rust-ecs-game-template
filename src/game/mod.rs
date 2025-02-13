@@ -13,46 +13,28 @@ pub struct Game {
     world: World,
 }
 
-/// Builder pattern implementation for game initialization.
-/// Handles the setup of core game systems and entities.
-pub struct GameBuilder {
-    world: World,
-    config: GameConfig,
-}
-
-impl GameBuilder {
-    /// Creates a new GameBuilder with default configuration and empty world state.
+impl Game {
+    /// Creates a new Game instance with default configuration.
     pub fn new() -> Self {
-        Self {
-            world: World::new(),
-            config: GameConfig::default(),
-        }
-    }
+        let config = GameConfig::default();
+        let world = World::new();
 
-    /// Constructs and initializes the game with the configured settings.
-    ///
-    /// # Returns
-    /// A fully initialized `Game` instance ready to run.
-    pub fn build(self) -> Game {
         let (mut raylib_handle, raylib_thread) = raylib::init()
-            .size(self.config.window_width, self.config.window_height)
-            .title(self.config.window_title)
+            .size(config.window_width, config.window_height)
+            .title(config.window_title)
             .build();
 
-        // Disable Raylib's default action of exiting the program when the Esc key is pressed.
         raylib_handle.set_exit_key(None);
 
-        Game {
-            config: self.config,
+        Self {
+            config,
             raylib_handle,
             raylib_thread,
             scene_manager: SceneManager::with_scene(GameScene::MainMenu(MainMenuScene)),
-            world: self.world,
+            world,
         }
     }
-}
 
-impl Game {
     /// Starts the main game loop and runs until the window is closed.
     pub fn run(&mut self) {
         while !self.raylib_handle.window_should_close() {

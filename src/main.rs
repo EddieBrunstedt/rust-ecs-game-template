@@ -4,9 +4,8 @@ mod config;
 mod game;
 mod world;
 
-use game::GameBuilder;
+use game::Game;
 
 fn main() {
-    let mut game = GameBuilder::new().build();
-    game.run();
+    Game::new().run();
 }
