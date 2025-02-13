@@ -10,7 +10,7 @@ use super::{Scene, SceneTransition};
 pub struct MainMenuScene;
 
 impl Scene for MainMenuScene {
-    fn enter(&mut self, _world: &mut World, _config: &GameConfig) {}
+    fn enter(&mut self, _world: &mut World, _config: &GameConfig, _raylib_handle: &RaylibHandle) {}
 
     fn exit(&mut self, _world: &mut World) {}
 

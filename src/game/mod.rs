@@ -64,8 +64,12 @@ impl Game {
         if let Some(transition) =
             current_scene.update(&mut self.world, &self.raylib_handle, &self.config)
         {
-            self.scene_manager
-                .handle_transition(transition, &mut self.world, &self.config);
+            self.scene_manager.handle_transition(
+                transition,
+                &mut self.world,
+                &self.config,
+                &self.raylib_handle,
+            );
             return true;
         }
 
