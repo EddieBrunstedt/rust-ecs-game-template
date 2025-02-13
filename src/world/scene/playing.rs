@@ -33,12 +33,12 @@ impl Scene for PlayingScene {
         config: &GameConfig,
     ) -> Option<SceneTransition> {
         let systems_to_run = [
-            GameSystem::HandlePause(HandlePauseSystem),
-            GameSystem::UpdateTime(UpdateTimeSystem),
-            GameSystem::HandleInput(HandleInputSystem),
-            GameSystem::UpdatePlayerPositions(UpdatePlayerPositionsSystem),
-            GameSystem::CollisionDetection(CollisionDetectionSystem),
-            GameSystem::CameraFollow(CameraFollowSystem),
+            GameUpdateSystem::HandlePause(HandlePauseSystem),
+            GameUpdateSystem::UpdateTime(UpdateTimeSystem),
+            GameUpdateSystem::HandleInput(HandleInputSystem),
+            GameUpdateSystem::UpdatePlayerPositions(UpdatePlayerPositionsSystem),
+            GameUpdateSystem::CollisionDetection(CollisionDetectionSystem),
+            GameUpdateSystem::CameraFollow(CameraFollowSystem),
         ];
 
         for system in systems_to_run {

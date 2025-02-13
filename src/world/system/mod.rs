@@ -2,7 +2,7 @@ mod camera_follow;
 mod clear_screen;
 mod collosion_detection;
 mod handle_input;
-mod handle_pause_system;
+mod handle_pause;
 mod handle_press_enter_to_play;
 mod handle_press_esc_to_play;
 mod handle_press_f_to_show_fps;
@@ -26,10 +26,10 @@ pub use camera_follow::CameraFollowSystem;
 pub use clear_screen::ClearScreenSystem;
 pub use collosion_detection::CollisionDetectionSystem;
 pub use handle_input::HandleInputSystem;
-pub use handle_pause_system::HandlePauseSystem;
-pub use handle_press_enter_to_play::HandlePressEnterToPlay;
-pub use handle_press_esc_to_play::HandlePressEscToPlay;
-pub use handle_press_f_to_show_fps::HandlePressFToShowFps;
+pub use handle_pause::HandlePauseSystem;
+pub use handle_press_enter_to_play::HandlePressEnterToPlaySystem;
+pub use handle_press_esc_to_play::HandlePressEscToPlaySystem;
+pub use handle_press_f_to_show_fps::HandlePressFToShowFpsSystem;
 pub use render_fps::RenderFpsSystem;
 pub use render_game_time::RenderGameTimeSystem;
 pub use render_main_menu::RenderMainMenu;
@@ -58,19 +58,19 @@ pub trait UpdateSystem {
     ) -> Option<SceneTransition>;
 }
 
-pub enum GameSystem {
+pub enum GameUpdateSystem {
     CameraFollow(CameraFollowSystem),
     CollisionDetection(CollisionDetectionSystem),
     HandleInput(HandleInputSystem),
     HandlePause(HandlePauseSystem),
-    HandlePressEnterToPlay(HandlePressEnterToPlay),
-    HandlePressEscToPlay(HandlePressEscToPlay),
-    HandlePressFToShowFps(HandlePressFToShowFps),
+    HandlePressEnterToPlay(HandlePressEnterToPlaySystem),
+    HandlePressEscToPlay(HandlePressEscToPlaySystem),
+    HandlePressFToShowFps(HandlePressFToShowFpsSystem),
     UpdatePlayerPositions(UpdatePlayerPositionsSystem),
     UpdateTime(UpdateTimeSystem),
 }
 
-impl UpdateSystem for GameSystem {
+impl UpdateSystem for GameUpdateSystem {
     fn run(
         &self,
         world: &mut World,
@@ -78,15 +78,15 @@ impl UpdateSystem for GameSystem {
         config: &GameConfig,
     ) -> Option<SceneTransition> {
         match self {
-            GameSystem::CameraFollow(sys) => sys.run(world, raylib_handle, config),
-            GameSystem::CollisionDetection(sys) => sys.run(world, raylib_handle, config),
-            GameSystem::HandleInput(sys) => sys.run(world, raylib_handle, config),
-            GameSystem::HandlePause(sys) => sys.run(world, raylib_handle, config),
-            GameSystem::HandlePressEnterToPlay(sys) => sys.run(world, raylib_handle, config),
-            GameSystem::HandlePressEscToPlay(sys) => sys.run(world, raylib_handle, config),
-            GameSystem::HandlePressFToShowFps(sys) => sys.run(world, raylib_handle, config),
-            GameSystem::UpdatePlayerPositions(sys) => sys.run(world, raylib_handle, config),
-            GameSystem::UpdateTime(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::CameraFollow(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::CollisionDetection(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::HandleInput(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::HandlePause(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::HandlePressEnterToPlay(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::HandlePressEscToPlay(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::HandlePressFToShowFps(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::UpdatePlayerPositions(sys) => sys.run(world, raylib_handle, config),
+            GameUpdateSystem::UpdateTime(sys) => sys.run(world, raylib_handle, config),
         }
     }
 }

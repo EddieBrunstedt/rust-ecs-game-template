@@ -26,8 +26,8 @@ impl Scene for PauseScene {
         config: &GameConfig,
     ) -> Option<SceneTransition> {
         let systems_to_run = [
-            GameSystem::HandlePressEscToPlay(HandlePressEscToPlay),
-            GameSystem::HandlePressFToShowFps(HandlePressFToShowFps),
+            GameUpdateSystem::HandlePressEscToPlay(HandlePressEscToPlaySystem),
+            GameUpdateSystem::HandlePressFToShowFps(HandlePressFToShowFpsSystem),
         ];
 
         for system in systems_to_run {

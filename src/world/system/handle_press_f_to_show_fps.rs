@@ -5,9 +5,9 @@ use crate::{config::GameConfig, world::*};
 use super::UpdateSystem;
 
 /// Processes input and updates entity control states.
-pub struct HandlePressFToShowFps;
+pub struct HandlePressFToShowFpsSystem;
 
-impl UpdateSystem for HandlePressFToShowFps {
+impl UpdateSystem for HandlePressFToShowFpsSystem {
     fn run(
         &self,
         world: &mut World,

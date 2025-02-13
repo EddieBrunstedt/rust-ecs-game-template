@@ -5,9 +5,9 @@ use crate::{config::GameConfig, world::*};
 use super::UpdateSystem;
 
 /// Processes input and updates entity control states.
-pub struct HandlePressEnterToPlay;
+pub struct HandlePressEnterToPlaySystem;
 
-impl UpdateSystem for HandlePressEnterToPlay {
+impl UpdateSystem for HandlePressEnterToPlaySystem {
     fn run(
         &self,
         _world: &mut World,

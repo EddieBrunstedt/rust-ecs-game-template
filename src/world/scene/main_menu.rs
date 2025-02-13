@@ -3,7 +3,8 @@ use raylib::prelude::*;
 use crate::{
     config::GameConfig,
     world::{
-        GameSystem, HandlePressEnterToPlay, RenderMainMenu, RenderSystem, UpdateSystem, World,
+        GameUpdateSystem, HandlePressEnterToPlaySystem, RenderMainMenu, RenderSystem, UpdateSystem,
+        World,
     },
 };
 
@@ -27,7 +28,9 @@ impl Scene for MainMenuScene {
         raylib_handle: &RaylibHandle,
         config: &GameConfig,
     ) -> Option<SceneTransition> {
-        let systems_to_run = [GameSystem::HandlePressEnterToPlay(HandlePressEnterToPlay)];
+        let systems_to_run = [GameUpdateSystem::HandlePressEnterToPlay(
+            HandlePressEnterToPlaySystem,
+        )];
 
         for system in systems_to_run {
             if let Some(transition) = system.run(world, raylib_handle, config) {
