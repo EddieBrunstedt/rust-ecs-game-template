@@ -22,23 +22,29 @@ use crate::config::GameConfig;
 
 use super::{SceneTransition, World};
 
-pub use camera_follow::CameraFollowSystem;
-pub use clear_screen::ClearScreenSystem;
-pub use collosion_detection::CollisionDetectionSystem;
-pub use handle_input::HandleInputSystem;
-pub use handle_pause::HandlePauseSystem;
-pub use handle_press_enter_to_play::HandlePressEnterToPlaySystem;
-pub use handle_press_esc_to_play::HandlePressEscToPlaySystem;
-pub use handle_press_f_to_show_fps::HandlePressFToShowFpsSystem;
-pub use render_fps::RenderFpsSystem;
-pub use render_game_time::RenderGameTimeSystem;
-pub use render_main_menu::RenderMainMenu;
-pub use render_paus_menu::RenderPausMenu;
-pub use render_press_p_for_paus::RenderPressPForPausSystem;
-pub use render_score::RenderScoreSystem;
-pub use render_visuals::RenderVisualsSystem;
-pub use update_player_positions::UpdatePlayerPositionsSystem;
-pub use update_time::UpdateTimeSystem;
+pub use self::{
+    camera_follow::CameraFollowSystem, clear_screen::ClearScreenSystem,
+    collosion_detection::CollisionDetectionSystem, handle_input::HandleInputSystem,
+    handle_pause::HandlePauseSystem, handle_press_enter_to_play::HandlePressEnterToPlaySystem,
+    handle_press_esc_to_play::HandlePressEscToPlaySystem,
+    handle_press_f_to_show_fps::HandlePressFToShowFpsSystem, render_fps::RenderFpsSystem,
+    render_game_time::RenderGameTimeSystem, render_main_menu::RenderMainMenu,
+    render_paus_menu::RenderPausMenu, render_press_p_for_paus::RenderPressPForPausSystem,
+    render_score::RenderScoreSystem, render_visuals::RenderVisualsSystem,
+    update_player_positions::UpdatePlayerPositionsSystem, update_time::UpdateTimeSystem,
+};
+
+pub enum GameUpdateSystem {
+    CameraFollow(CameraFollowSystem),
+    CollisionDetection(CollisionDetectionSystem),
+    HandleInput(HandleInputSystem),
+    HandlePause(HandlePauseSystem),
+    HandlePressEnterToPlay(HandlePressEnterToPlaySystem),
+    HandlePressEscToPlay(HandlePressEscToPlaySystem),
+    HandlePressFToShowFps(HandlePressFToShowFpsSystem),
+    UpdatePlayerPositions(UpdatePlayerPositionsSystem),
+    UpdateTime(UpdateTimeSystem),
+}
 
 /// Defines behavior for systems that render to the screen.
 /// Render systems are called each frame, commonly after update systems complete.
@@ -56,18 +62,6 @@ pub trait UpdateSystem {
         raylib_handle: &RaylibHandle,
         config: &GameConfig,
     ) -> Option<SceneTransition>;
-}
-
-pub enum GameUpdateSystem {
-    CameraFollow(CameraFollowSystem),
-    CollisionDetection(CollisionDetectionSystem),
-    HandleInput(HandleInputSystem),
-    HandlePause(HandlePauseSystem),
-    HandlePressEnterToPlay(HandlePressEnterToPlaySystem),
-    HandlePressEscToPlay(HandlePressEscToPlaySystem),
-    HandlePressFToShowFps(HandlePressFToShowFpsSystem),
-    UpdatePlayerPositions(UpdatePlayerPositionsSystem),
-    UpdateTime(UpdateTimeSystem),
 }
 
 impl UpdateSystem for GameUpdateSystem {
