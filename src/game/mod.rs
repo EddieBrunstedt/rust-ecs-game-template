@@ -33,7 +33,7 @@ impl GameBuilder {
     ///
     /// # Returns
     /// A fully initialized `Game` instance ready to run.
-    pub fn enter(self) -> Game {
+    pub fn build(self) -> Game {
         let (mut raylib_handle, raylib_thread) = raylib::init()
             .size(self.config.window_width, self.config.window_height)
             .title(self.config.window_title)
