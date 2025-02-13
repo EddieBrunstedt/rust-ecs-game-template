@@ -7,7 +7,6 @@ use crate::{
 
 use super::{Scene, SceneTransition};
 
-#[derive(Debug)]
 pub struct PlayingScene;
 
 impl Scene for PlayingScene {

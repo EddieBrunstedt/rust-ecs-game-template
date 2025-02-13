@@ -10,7 +10,6 @@ use crate::{
 
 use super::{Scene, SceneTransition};
 
-#[derive(Debug)]
 pub struct MainMenuScene;
 
 impl Scene for MainMenuScene {
