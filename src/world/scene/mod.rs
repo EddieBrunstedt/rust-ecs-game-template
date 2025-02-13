@@ -39,6 +39,22 @@ pub trait Scene {
 
     /// Whether this scene should render scenes below it
     fn is_transparent(&self) -> bool;
+
+    fn run_systems_until_first_transition(
+        &self,
+        world: &mut World,
+        raylib_handle: &RaylibHandle,
+        config: &GameConfig,
+        systems_to_run: &[GameUpdateSystem],
+    ) -> Option<SceneTransition> {
+        for system in systems_to_run {
+            if let Some(transition) = system.run(world, raylib_handle, config) {
+                return Some(transition);
+            }
+        }
+
+        None
+    }
 }
 
 // Enum to hold all possible scenes

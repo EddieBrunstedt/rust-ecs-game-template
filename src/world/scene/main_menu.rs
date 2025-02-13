@@ -31,13 +31,7 @@ impl Scene for MainMenuScene {
             HandlePressEnterToPlaySystem,
         )];
 
-        for system in systems_to_run {
-            if let Some(transition) = system.run(world, raylib_handle, config) {
-                return Some(transition);
-            }
-        }
-
-        None
+        self.run_systems_until_first_transition(world, raylib_handle, config, &systems_to_run)
     }
 
     fn render(
