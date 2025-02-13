@@ -2,10 +2,7 @@ use raylib::prelude::*;
 
 use crate::{
     config::GameConfig,
-    world::{
-        GameUpdateSystem, HandlePressEnterToPlaySystem, RenderMainMenu, RenderSystem, UpdateSystem,
-        World,
-    },
+    world::{GameUpdateSystem, HandlePressEnterToPlaySystem, RenderMainMenu, RenderSystem, World},
 };
 
 use super::{Scene, SceneTransition};
