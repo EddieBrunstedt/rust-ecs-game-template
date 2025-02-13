@@ -53,6 +53,7 @@ impl SceneManager {
         transition: SceneTransition,
         world: &mut World,
         config: &GameConfig,
+        raylib_handle: &RaylibHandle,
     ) {
         match transition {
             SceneTransition::Replace(new_scene) => {
@@ -60,11 +61,17 @@ impl SceneManager {
                     current_scene.exit(world);
                 }
                 self.scene_stack.push(new_scene);
-                self.scene_stack.last_mut().unwrap().enter(world, config);
+                self.scene_stack
+                    .last_mut()
+                    .unwrap()
+                    .enter(world, config, raylib_handle);
             }
             SceneTransition::Push(new_scene) => {
                 self.scene_stack.push(new_scene);
-                self.scene_stack.last_mut().unwrap().enter(world, config);
+                self.scene_stack
+                    .last_mut()
+                    .unwrap()
+                    .enter(world, config, raylib_handle);
             }
             SceneTransition::Pop => {
                 if let Some(mut current_scene) = self.scene_stack.pop() {

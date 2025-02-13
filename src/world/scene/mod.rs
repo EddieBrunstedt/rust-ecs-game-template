@@ -20,7 +20,7 @@ pub use playing::PlayingScene;
 pub trait Scene {
     /// Called when this scene becomes active, either by being pushed onto the stack
     /// or when it becomes the new top scene after a pop operation.
-    fn enter(&mut self, world: &mut World, config: &GameConfig);
+    fn enter(&mut self, world: &mut World, config: &GameConfig, raylib_handle: &RaylibHandle);
 
     /// Called when this scene is being removed from the scene stack.
     fn exit(&mut self, world: &mut World);
@@ -96,11 +96,11 @@ pub enum GameScene {
 }
 
 impl GameScene {
-    pub fn enter(&mut self, world: &mut World, config: &GameConfig) {
+    pub fn enter(&mut self, world: &mut World, config: &GameConfig, raylib_handle: &RaylibHandle) {
         match self {
-            GameScene::MainMenu(scene) => scene.enter(world, config),
-            GameScene::Playing(scene) => scene.enter(world, config),
-            GameScene::Paused(scene) => scene.enter(world, config),
+            GameScene::MainMenu(scene) => scene.enter(world, config, raylib_handle),
+            GameScene::Playing(scene) => scene.enter(world, config, raylib_handle),
+            GameScene::Paused(scene) => scene.enter(world, config, raylib_handle),
         }
     }
 
