@@ -7,38 +7,37 @@ pub struct RenderPausMenu;
 
 impl RenderSystem for RenderPausMenu {
     fn run(_world: &mut World, draw_handle: &mut RaylibDrawHandle, config: &GameConfig) {
-        // Draw semi-transparent overlay
         draw_handle.draw_rectangle(
             (config.window_width / 2) / 2,
             (config.window_height / 2) / 2,
             config.window_width / 2,
             config.window_height / 2,
-            Color::new(50, 50, 50, 100),
+            Color::WHEAT,
         );
 
-        // Draw menu title
         let title = "PAUSE MENU";
         let title_size = 40;
         let title_width = draw_handle.measure_text(title, title_size);
+
         draw_handle.draw_text(
             title,
             config.window_width / 2 - title_width / 2,
             config.window_height / 3,
             title_size,
-            Color::WHITE,
+            Color::BLACK,
         );
 
-        // Draw options
         let options_text = "Press F to toggle FPS\n\nPress ESC to resume";
         let options_size = 20;
         let options_width =
             draw_handle.measure_text(options_text.split('\n').next().unwrap(), options_size);
+
         draw_handle.draw_text(
             options_text,
             config.window_width / 2 - options_width / 2,
             config.window_height / 2,
             options_size,
-            Color::WHITE,
+            Color::BLACK,
         );
     }
 }

@@ -7,7 +7,7 @@ use raylib::prelude::*;
 pub struct UpdateTimeSystem;
 
 impl UpdateSystem for UpdateTimeSystem {
-    fn run(world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
+    fn run(&self, world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
         if let Some(game_time) = world.resources.game_time_mut() {
             game_time.total += raylib_handle.get_frame_time();
         }

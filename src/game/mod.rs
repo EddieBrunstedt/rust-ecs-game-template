@@ -43,7 +43,7 @@ impl GameBuilder {
             world: self.world,
         };
 
-        game.handle_scene_transition(SceneTransition::Push(GameScene::Playing(PlayingScene)));
+        game.handle_scene_transition(SceneTransition::Push(GameScene::MainMenu(MainMenuScene)));
 
         game
     }

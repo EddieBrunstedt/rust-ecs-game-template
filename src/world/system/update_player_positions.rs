@@ -9,7 +9,7 @@ use raylib::prelude::*;
 pub struct UpdatePlayerPositionsSystem;
 
 impl UpdateSystem for UpdatePlayerPositionsSystem {
-    fn run(world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
+    fn run(&self, world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
         let delta_time = raylib_handle.get_frame_time();
 
         // Collect all active entities that need position updates

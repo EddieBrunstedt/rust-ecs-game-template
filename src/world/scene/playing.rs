@@ -32,17 +32,25 @@ impl Scene for PlayingScene {
         raylib_handle: &RaylibHandle,
         config: &GameConfig,
     ) -> Option<SceneTransition> {
-        if raylib_handle.is_key_pressed(KeyboardKey::KEY_P) {
-            return Some(SceneTransition::Push(GameScene::Paused(PauseScene)));
+        let systems_to_run = [
+            GameSystem::HandlePause(HandlePauseSystem),
+            GameSystem::UpdateTime(UpdateTimeSystem),
+            GameSystem::HandleInput(HandleInputSystem),
+            GameSystem::UpdatePlayerPositions(UpdatePlayerPositionsSystem),
+            GameSystem::CollisionDetection(CollisionDetectionSystem),
+            GameSystem::CameraFollow(CameraFollowSystem),
+        ];
+
+        if let Some(transition) = HandlePauseSystem::check_transition(world, raylib_handle) {
+            return Some(transition);
         }
 
-        UpdateTimeSystem::run(world, raylib_handle, config);
-        HandleInputSystem::run(world, raylib_handle, config);
-        UpdatePlayerPositionsSystem::run(world, raylib_handle, config);
-        CollisionDetectionSystem::run(world, raylib_handle, config);
-        CameraFollowSystem::run(world, raylib_handle, config);
+        run_systems_until_transition(systems_to_run, world, raylib_handle, config);
 
-        None
+        world
+            .resources
+            .scene_transition_mut()
+            .and_then(|res| res.pending_transition.take())
     }
 
     fn render(
@@ -55,11 +63,14 @@ impl Scene for PlayingScene {
         RenderScoreSystem::run(world, draw_handle, config);
         RenderGameTimeSystem::run(world, draw_handle, config);
         RenderFpsSystem::run(world, draw_handle, config);
+        RenderPressPForPausSystem::run(world, draw_handle, config);
     }
 }
 
 fn setup_resources(world: &mut World) {
-    world.resources.insert_game_time(GameTime { total: 0.0 });
+    world
+        .resources
+        .insert_game_time(GameTimeResource { total: 0.0 });
 }
 
 fn setup_player(world: &mut World, config: &GameConfig) -> Entity {
@@ -131,5 +142,23 @@ fn setup_score(world: &mut World) {
 fn setup_ui_state(world: &mut World, config: &GameConfig) {
     world.build_entity().with(UiVisibilityComponent {
         fps_counter: config.fps_initial_visibility,
+        press_p_for_paus: true,
     });
+}
+
+pub fn run_systems_until_transition<const N: usize, S: UpdateSystem>(
+    systems: [S; N],
+    world: &mut World,
+    raylib_handle: &RaylibHandle,
+    config: &GameConfig,
+) {
+    for system in systems {
+        system.run(world, raylib_handle, config);
+
+        if let Some(transition_resource) = world.resources.scene_transition() {
+            if transition_resource.pending_transition.is_some() {
+                break;
+            }
+        }
+    }
 }

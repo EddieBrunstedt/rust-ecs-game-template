@@ -24,6 +24,16 @@ impl Scene for PauseScene {
         _config: &GameConfig,
     ) -> Option<SceneTransition> {
         if raylib_handle.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
+            let ui_entity = world
+                .iter_entities()
+                .find(|e| world.components.ui_visibility(*e).is_some())
+                .expect("UI visibility state is required");
+
+            world
+                .components
+                .expect_ui_visibility_mut(ui_entity)
+                .press_p_for_paus = true;
+
             Some(SceneTransition::Pop)
         } else if raylib_handle.is_key_pressed(KeyboardKey::KEY_F) {
             let entities: Vec<_> = world.iter_entities().collect();

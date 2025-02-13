@@ -9,7 +9,7 @@ use raylib::prelude::*;
 pub struct HandleInputSystem;
 
 impl UpdateSystem for HandleInputSystem {
-    fn run(world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig) {
+    fn run(&self, world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig) {
         let control_updates: Vec<(Entity, Vector2)> = world
             .iter_entities()
             .filter_map(|entity| {

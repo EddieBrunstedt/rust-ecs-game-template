@@ -53,6 +53,7 @@ pub struct ScoreComponent {
 
 pub struct UiVisibilityComponent {
     pub fps_counter: bool,
+    pub press_p_for_paus: bool,
 }
 
 /// Visual representation properties for an entity.

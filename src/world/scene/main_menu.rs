@@ -1,5 +1,8 @@
-use super::{Scene, SceneTransition};
-use crate::{config::GameConfig, world::World};
+use super::{GameScene, PlayingScene, Scene, SceneTransition};
+use crate::{
+    config::GameConfig,
+    world::{RenderMainMenu, RenderSystem, World},
+};
 use raylib::prelude::*;
 
 #[derive(Debug)]
@@ -24,8 +27,8 @@ impl Scene for MainMenuScene {
         raylib_handle: &RaylibHandle,
         _config: &GameConfig,
     ) -> Option<SceneTransition> {
-        if raylib_handle.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
-            Some(SceneTransition::Pop) // Return to previous scene
+        if raylib_handle.is_key_pressed(KeyboardKey::KEY_ENTER) {
+            Some(SceneTransition::Replace(GameScene::Playing(PlayingScene)))
         } else {
             None
         }
@@ -33,10 +36,10 @@ impl Scene for MainMenuScene {
 
     fn render(
         &mut self,
-        _world: &mut World,
-        _draw_handle: &mut RaylibDrawHandle,
-        _config: &GameConfig,
+        world: &mut World,
+        draw_handle: &mut RaylibDrawHandle,
+        config: &GameConfig,
     ) {
-        // Run Render Systems
+        RenderMainMenu::run(world, draw_handle, config);
     }
 }

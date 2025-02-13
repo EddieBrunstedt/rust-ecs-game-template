@@ -6,7 +6,7 @@ use raylib::prelude::*;
 pub struct CollisionDetectionSystem;
 
 impl UpdateSystem for CollisionDetectionSystem {
-    fn run(world: &mut World, _raylib_handle: &RaylibHandle, config: &GameConfig) {
+    fn run(&self, world: &mut World, _raylib_handle: &RaylibHandle, config: &GameConfig) {
         let score_entity = world
             .iter_entities()
             .find(|&e| world.components.has_score(e));

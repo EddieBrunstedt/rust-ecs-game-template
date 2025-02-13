@@ -6,7 +6,7 @@ use raylib::prelude::*;
 pub struct CameraFollowSystem;
 
 impl UpdateSystem for CameraFollowSystem {
-    fn run(world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
+    fn run(&self, world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
         let updates: Vec<_> = world
             .iter_entities()
             .filter_map(|entity| {
