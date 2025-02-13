@@ -1,15 +1,22 @@
-use super::UpdateSystem;
+use raylib::prelude::*;
+
 use crate::{
     config::GameConfig,
-    world::{Entity, World},
+    world::{Entity, SceneTransition, World},
 };
-use raylib::prelude::*;
+
+use super::UpdateSystem;
 
 /// Processes input and updates entity control states.
 pub struct HandleInputSystem;
 
 impl UpdateSystem for HandleInputSystem {
-    fn run(world: &mut World, raylib_handle: &RaylibHandle, config: &GameConfig) {
+    fn run(
+        &self,
+        world: &mut World,
+        raylib_handle: &RaylibHandle,
+        config: &GameConfig,
+    ) -> Option<SceneTransition> {
         let control_updates: Vec<(Entity, Vector2)> = world
             .iter_entities()
             .filter_map(|entity| {
@@ -39,5 +46,7 @@ impl UpdateSystem for HandleInputSystem {
                 .expect_controls_mut(entity)
                 .movement_direction = movement;
         }
+
+        None
     }
 }

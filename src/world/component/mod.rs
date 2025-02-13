@@ -1,9 +1,11 @@
 mod definitions;
 mod macros;
 
-use super::Entity;
-pub use definitions::*;
 use std::collections::HashMap;
+
+use super::Entity;
+
+pub use definitions::*;
 
 /// A container for all component storages in the ECS.
 /// Provides high-level access to component data and entity management.

@@ -1,15 +1,22 @@
-use super::UpdateSystem;
+use raylib::prelude::*;
+
 use crate::{
     config::GameConfig,
-    world::{Entity, World},
+    world::{Entity, SceneTransition, World},
 };
-use raylib::prelude::*;
+
+use super::UpdateSystem;
 
 /// Updates entity positions based on their control states.
 pub struct UpdatePlayerPositionsSystem;
 
 impl UpdateSystem for UpdatePlayerPositionsSystem {
-    fn run(world: &mut World, raylib_handle: &RaylibHandle, _config: &GameConfig) {
+    fn run(
+        &self,
+        world: &mut World,
+        raylib_handle: &RaylibHandle,
+        _config: &GameConfig,
+    ) -> Option<SceneTransition> {
         let delta_time = raylib_handle.get_frame_time();
 
         // Collect all active entities that need position updates
@@ -33,5 +40,7 @@ impl UpdateSystem for UpdatePlayerPositionsSystem {
                 world.components.expect_position_mut(entity).coords = new_position;
             }
         }
+
+        None
     }
 }

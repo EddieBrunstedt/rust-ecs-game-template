@@ -1,6 +1,8 @@
-use super::RenderSystem;
-use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
+
+use crate::{config::GameConfig, world::World};
+
+use super::RenderSystem;
 
 /// Renders the game time on screen.
 pub struct RenderGameTimeSystem;

@@ -40,6 +40,7 @@ pub struct GameConfig {
     pub score_text_x: i32,
     pub score_text_y: i32,
 
+    pub fps_initial_visibility: bool,
     pub fps_padding_top: i32,
     pub fps_padding_right: i32,
 
@@ -82,6 +83,7 @@ impl Default for GameConfig {
             score_text_x: 10,
             score_text_y: 10,
 
+            fps_initial_visibility: true,
             fps_padding_top: 10,
             fps_padding_right: 10,
 

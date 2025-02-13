@@ -1,8 +1,9 @@
+use std::fmt;
+
 use super::{
     component::{ComponentStorage, Components},
     World,
 };
-use std::fmt;
 
 /// A generational identifier that prevents the ABA problem by combining
 /// an index with a generation counter.
