@@ -12,24 +12,32 @@ pub use manager::SceneManager;
 pub use paus::PauseScene;
 pub use playing::PlayingScene;
 
-pub enum SceneTransition {
-    /// Replace the current scene entirely, cleaning up all entities
-    Replace(GameScene),
-    /// Push a new scene on top, preserving the current scene underneath
-    Push(GameScene),
-    /// Pop the current scene, returning to the previous scene
-    Pop,
-}
-
+/// Represents a game scene with lifecycle methods for managing state and rendering.
+///
+/// A scene is a distinct state of the game (e.g., main menu, gameplay, pause screen)
+/// that has its own update and render logic. Scenes can be stacked and transitioned
+/// between to create complex game state management.
 pub trait Scene {
+    /// Called when this scene becomes active, either by being pushed onto the stack
+    /// or when it becomes the new top scene after a pop operation.
     fn enter(&mut self, world: &mut World, config: &GameConfig);
+
+    /// Called when this scene is being removed from the scene stack.
     fn exit(&mut self, world: &mut World);
+
+    /// Updates the scene's state and handles input.
+    ///
+    /// # Returns
+    /// * `Some(SceneTransition)` if a scene transition should occur
+    /// * `None` if no transition is needed
     fn update(
         &mut self,
         world: &mut World,
         raylib_handle: &RaylibHandle,
         config: &GameConfig,
     ) -> Option<SceneTransition>;
+
+    /// Renders the scene's current state to the screen.
     fn render(
         &mut self,
         world: &mut World,
@@ -37,7 +45,11 @@ pub trait Scene {
         config: &GameConfig,
     );
 
-    /// Whether this scene should render scenes below it
+    /// Determines if scenes below this one in the stack should be rendered.
+    ///
+    /// # Returns
+    /// * `true` if lower scenes should be rendered (e.g., for overlay menus)
+    /// * `false` if this scene fully obscures lower scenes
     fn is_transparent(&self) -> bool;
 
     fn run_systems_until_first_transition(
@@ -57,10 +69,29 @@ pub trait Scene {
     }
 }
 
-// Enum to hold all possible scenes
+/// Represents the different ways scenes can transition between each other.
+///
+/// Used by the scene manager to handle scene stack modifications when scenes
+/// request state changes.
+pub enum SceneTransition {
+    /// Removes the current scene and adds the new scene in its place
+    Replace(GameScene),
+    /// Adds a new scene on top of the current scene, preserving the current scene below
+    Push(GameScene),
+    /// Removes the current scene, revealing the scene below (if any)
+    Pop,
+}
+
+/// Represents all possible scene types in the game.
+///
+/// This enum serves as a type-safe way to manage different scene implementations
+/// while providing a unified interface through trait delegation.
 pub enum GameScene {
+    /// The main menu scene shown when the game starts
     MainMenu(MainMenuScene),
+    /// The active gameplay scene
     Playing(PlayingScene),
+    /// The pause menu overlay scene
     Paused(PauseScene),
 }
 

@@ -1,7 +1,7 @@
-use crate::world::component::ComponentMap;
-use crate::world::{ComponentStorage, Components, Entity};
-use crate::{define_component_storages, define_components, impl_component_storage};
 use raylib::prelude::*;
+
+use crate::world::component::*;
+use crate::{define_component_storages, define_components, impl_component_storage};
 
 define_components! {
     (camera, CameraComponent),
@@ -51,6 +51,7 @@ pub struct ScoreComponent {
     pub value: usize,
 }
 
+/// Tracks which UI elements should be visible on the screen.
 pub struct UiVisibilityComponent {
     pub fps_counter: bool,
     pub press_p_for_paus: bool,
