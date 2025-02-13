@@ -1,9 +1,11 @@
-use super::{Scene, SceneTransition};
+use raylib::prelude::*;
+
 use crate::{
     config::GameConfig,
     world::{system::*, *},
 };
-use raylib::prelude::*;
+
+use super::{Scene, SceneTransition};
 
 #[derive(Debug)]
 pub struct PauseScene;
@@ -21,33 +23,20 @@ impl Scene for PauseScene {
         &mut self,
         world: &mut World,
         raylib_handle: &RaylibHandle,
-        _config: &GameConfig,
+        config: &GameConfig,
     ) -> Option<SceneTransition> {
-        if raylib_handle.is_key_pressed(KeyboardKey::KEY_ESCAPE) {
-            let ui_entity = world
-                .iter_entities()
-                .find(|e| world.components.ui_visibility(*e).is_some())
-                .expect("UI visibility state is required");
+        let systems_to_run = [
+            GameSystem::HandlePressEscToPlay(HandlePressEscToPlay),
+            GameSystem::HandlePressFToShowFps(HandlePressFToShowFps),
+        ];
 
-            world
-                .components
-                .expect_ui_visibility_mut(ui_entity)
-                .press_p_for_paus = true;
-
-            Some(SceneTransition::Pop)
-        } else if raylib_handle.is_key_pressed(KeyboardKey::KEY_F) {
-            let entities: Vec<_> = world.iter_entities().collect();
-
-            for entity in entities {
-                if let Some(ui_visibility) = world.components.ui_visibility_mut(entity) {
-                    ui_visibility.fps_counter = !ui_visibility.fps_counter;
-                    break;
-                }
+        for system in systems_to_run {
+            if let Some(transition) = system.run(world, raylib_handle, config) {
+                return Some(transition);
             }
-            None
-        } else {
-            None
         }
+
+        None
     }
 
     fn render(

@@ -1,6 +1,8 @@
-use super::RenderSystem;
-use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
+
+use crate::{config::GameConfig, world::World};
+
+use super::RenderSystem;
 
 /// Renders all camera-visible entities to the screen.
 // TODO: Rename to convey this is camera stuff (and refactor)

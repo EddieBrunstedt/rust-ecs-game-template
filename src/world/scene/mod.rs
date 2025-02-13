@@ -1,11 +1,14 @@
 mod main_menu;
+mod manager;
 mod paus;
 mod playing;
 
-use crate::{config::GameConfig, world::*};
 use raylib::prelude::*;
 
+use crate::{config::GameConfig, world::*};
+
 pub use main_menu::MainMenuScene;
+pub use manager::SceneManager;
 pub use paus::PauseScene;
 pub use playing::PlayingScene;
 

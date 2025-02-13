@@ -92,5 +92,4 @@ macro_rules! define_resources {
 // Generate the resources.
 define_resources! {
     game_time: GameTimeResource,
-    scene_transition: SceneTransitionResource
 }

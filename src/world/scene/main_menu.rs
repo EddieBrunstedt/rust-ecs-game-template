@@ -1,37 +1,41 @@
-use super::{GameScene, PlayingScene, Scene, SceneTransition};
+use raylib::prelude::*;
+
 use crate::{
     config::GameConfig,
-    world::{RenderMainMenu, RenderSystem, World},
+    world::{
+        GameSystem, HandlePressEnterToPlay, RenderMainMenu, RenderSystem, UpdateSystem, World,
+    },
 };
-use raylib::prelude::*;
+
+use super::{Scene, SceneTransition};
 
 #[derive(Debug)]
 pub struct MainMenuScene;
 
 impl Scene for MainMenuScene {
-    fn enter(&mut self, _world: &mut World, _config: &GameConfig) {
-        // Setup pause-specific UI entities only
-    }
+    fn enter(&mut self, _world: &mut World, _config: &GameConfig) {}
 
-    fn exit(&mut self, _world: &mut World) {
-        // Cleanup pause-specific UI entities only
-    }
+    fn exit(&mut self, _world: &mut World) {}
 
     fn is_transparent(&self) -> bool {
-        true // Allow the game scene to render underneath
+        false
     }
 
     fn update(
         &mut self,
-        _world: &mut World,
+        world: &mut World,
         raylib_handle: &RaylibHandle,
-        _config: &GameConfig,
+        config: &GameConfig,
     ) -> Option<SceneTransition> {
-        if raylib_handle.is_key_pressed(KeyboardKey::KEY_ENTER) {
-            Some(SceneTransition::Replace(GameScene::Playing(PlayingScene)))
-        } else {
-            None
+        let systems_to_run = [GameSystem::HandlePressEnterToPlay(HandlePressEnterToPlay)];
+
+        for system in systems_to_run {
+            if let Some(transition) = system.run(world, raylib_handle, config) {
+                return Some(transition);
+            }
         }
+
+        None
     }
 
     fn render(

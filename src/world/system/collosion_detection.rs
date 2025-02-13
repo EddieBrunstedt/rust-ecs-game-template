@@ -1,12 +1,22 @@
-use super::UpdateSystem;
-use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
+
+use crate::{
+    config::GameConfig,
+    world::{SceneTransition, World},
+};
+
+use super::UpdateSystem;
 
 /// Handles collision detection between entities.
 pub struct CollisionDetectionSystem;
 
 impl UpdateSystem for CollisionDetectionSystem {
-    fn run(&self, world: &mut World, _raylib_handle: &RaylibHandle, config: &GameConfig) {
+    fn run(
+        &self,
+        world: &mut World,
+        _raylib_handle: &RaylibHandle,
+        config: &GameConfig,
+    ) -> Option<SceneTransition> {
         let score_entity = world
             .iter_entities()
             .find(|&e| world.components.has_score(e));
@@ -50,5 +60,7 @@ impl UpdateSystem for CollisionDetectionSystem {
         entities_to_remove
             .iter()
             .for_each(|&e| world.remove_entity(e));
+
+        None
     }
 }

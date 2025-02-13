@@ -8,7 +8,7 @@ pub struct Game {
     config: GameConfig,
     raylib_handle: RaylibHandle,
     raylib_thread: RaylibThread,
-    scene_stack: Vec<GameScene>,
+    scene_manager: SceneManager,
     world: World,
 }
 
@@ -27,7 +27,7 @@ impl GameBuilder {
         }
     }
 
-    pub fn enter(self) -> Game {
+    pub fn enter(mut self) -> Game {
         let (mut raylib_handle, raylib_thread) = raylib::init()
             .size(self.config.window_width, self.config.window_height)
             .title(self.config.window_title)
@@ -35,87 +35,44 @@ impl GameBuilder {
 
         raylib_handle.set_exit_key(None);
 
-        let mut game = Game {
+        let mut scene_manager = SceneManager::new();
+
+        scene_manager.handle_transition(
+            SceneTransition::Replace(GameScene::MainMenu(MainMenuScene)),
+            &mut self.world,
+            &self.config,
+        );
+
+        Game {
             config: self.config,
             raylib_handle,
             raylib_thread,
-            scene_stack: vec![],
+            scene_manager,
             world: self.world,
-        };
-
-        game.handle_scene_transition(SceneTransition::Push(GameScene::MainMenu(MainMenuScene)));
-
-        game
+        }
     }
 }
 
 impl Game {
-    pub fn handle_scene_transition(&mut self, transition: SceneTransition) {
-        match transition {
-            SceneTransition::Replace(new_scene) => {
-                if let Some(mut current_scene) = self.scene_stack.pop() {
-                    current_scene.exit(&mut self.world);
-                }
-                self.scene_stack.push(new_scene);
-                self.scene_stack
-                    .last_mut()
-                    .unwrap()
-                    .enter(&mut self.world, &self.config);
-            }
-            SceneTransition::Push(new_scene) => {
-                self.scene_stack.push(new_scene);
-                self.scene_stack
-                    .last_mut()
-                    .unwrap()
-                    .enter(&mut self.world, &self.config);
-            }
-            SceneTransition::Pop => {
-                if let Some(mut current_scene) = self.scene_stack.pop() {
-                    current_scene.exit(&mut self.world);
-                }
-            }
-        }
-    }
-
     pub fn run(&mut self) {
         while !self.raylib_handle.window_should_close() {
             // Handle scene updates
-            if let Some(current_scene) = self.scene_stack.last_mut() {
+            if let Some(current_scene) = self.scene_manager.current_scene() {
                 if let Some(transition) =
                     current_scene.update(&mut self.world, &self.raylib_handle, &self.config)
                 {
-                    self.handle_scene_transition(transition);
+                    self.scene_manager
+                        .handle_transition(transition, &mut self.world, &self.config);
                     continue;
                 }
             }
 
             // Begin drawing
             let mut draw_handle = self.raylib_handle.begin_drawing(&self.raylib_thread);
-            crate::world::ClearScreenSystem::run(&mut self.world, &mut draw_handle, &self.config);
+            ClearScreenSystem::run(&mut self.world, &mut draw_handle, &self.config);
 
-            // Find the topmost non-transparent scene
-            let first_non_transparent = self
-                .scene_stack
-                .iter()
-                .rev()
-                .position(|scene| !scene.is_transparent())
-                .map(|pos| self.scene_stack.len() - 1 - pos);
-
-            // Determine which scenes to render
-            match first_non_transparent {
-                // If we found a non-transparent scene, render it and any transparent scenes above it
-                Some(base_index) => {
-                    for scene in self.scene_stack[base_index..].iter_mut() {
-                        scene.render(&mut self.world, &mut draw_handle, &self.config);
-                    }
-                }
-                // If all scenes are transparent, render all scenes
-                None => {
-                    for scene in self.scene_stack.iter_mut() {
-                        scene.render(&mut self.world, &mut draw_handle, &self.config);
-                    }
-                }
-            }
+            self.scene_manager
+                .render(&mut self.world, &mut draw_handle, &self.config);
         }
     }
 }

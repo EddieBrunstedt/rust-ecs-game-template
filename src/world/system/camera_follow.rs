@@ -1,12 +1,22 @@
-use super::UpdateSystem;
-use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
+
+use crate::{
+    config::GameConfig,
+    world::{SceneTransition, World},
+};
+
+use super::UpdateSystem;
 
 /// Updates camera position to follow its target entity.
 pub struct CameraFollowSystem;
 
 impl UpdateSystem for CameraFollowSystem {
-    fn run(&self, world: &mut World, _raylib_handle: &RaylibHandle, _config: &GameConfig) {
+    fn run(
+        &self,
+        world: &mut World,
+        _raylib_handle: &RaylibHandle,
+        _config: &GameConfig,
+    ) -> Option<SceneTransition> {
         let updates: Vec<_> = world
             .iter_entities()
             .filter_map(|entity| {
@@ -20,5 +30,7 @@ impl UpdateSystem for CameraFollowSystem {
         for (entity, new_position) in updates {
             world.components.expect_position_mut(entity).coords = new_position;
         }
+
+        None
     }
 }

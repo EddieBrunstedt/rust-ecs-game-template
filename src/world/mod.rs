@@ -6,13 +6,13 @@ mod system;
 
 use std::collections::VecDeque;
 
+use crate::config::GameConfig;
+
 pub use component::*;
 pub use entity::*;
 pub use resource::*;
 pub use scene::*;
 pub use system::*;
-
-use crate::config::GameConfig;
 
 /// Central container for all ECS elements including entities, components, and resources.
 /// Manages entity lifecycle and provides access to component and resource storage.

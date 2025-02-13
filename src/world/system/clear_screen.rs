@@ -1,6 +1,8 @@
-use super::RenderSystem;
-use crate::{config::GameConfig, world::World};
 use raylib::prelude::*;
+
+use crate::{config::GameConfig, world::World};
+
+use super::RenderSystem;
 
 /// Clears the entire screen.
 /// Commonly used at the beginning of each rendering cycle.

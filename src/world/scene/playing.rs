@@ -1,9 +1,11 @@
-use super::{Scene, SceneTransition};
+use raylib::prelude::*;
+
 use crate::{
     config::GameConfig,
     world::{system::*, *},
 };
-use raylib::prelude::*;
+
+use super::{Scene, SceneTransition};
 
 #[derive(Debug)]
 pub struct PlayingScene;
@@ -18,9 +20,7 @@ impl Scene for PlayingScene {
         setup_ui_state(world, config);
     }
 
-    fn exit(&mut self, _world: &mut World) {
-        // Cleanup playing-specific UI entities only
-    }
+    fn exit(&mut self, _world: &mut World) {}
 
     fn is_transparent(&self) -> bool {
         false
@@ -41,16 +41,13 @@ impl Scene for PlayingScene {
             GameSystem::CameraFollow(CameraFollowSystem),
         ];
 
-        if let Some(transition) = HandlePauseSystem::check_transition(world, raylib_handle) {
-            return Some(transition);
+        for system in systems_to_run {
+            if let Some(transition) = system.run(world, raylib_handle, config) {
+                return Some(transition);
+            }
         }
 
-        run_systems_until_transition(systems_to_run, world, raylib_handle, config);
-
-        world
-            .resources
-            .scene_transition_mut()
-            .and_then(|res| res.pending_transition.take())
+        None
     }
 
     fn render(
@@ -144,21 +141,4 @@ fn setup_ui_state(world: &mut World, config: &GameConfig) {
         fps_counter: config.fps_initial_visibility,
         press_p_for_paus: true,
     });
-}
-
-pub fn run_systems_until_transition<const N: usize, S: UpdateSystem>(
-    systems: [S; N],
-    world: &mut World,
-    raylib_handle: &RaylibHandle,
-    config: &GameConfig,
-) {
-    for system in systems {
-        system.run(world, raylib_handle, config);
-
-        if let Some(transition_resource) = world.resources.scene_transition() {
-            if transition_resource.pending_transition.is_some() {
-                break;
-            }
-        }
-    }
 }
